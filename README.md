@@ -104,8 +104,8 @@ Un trigger (`actualizar_monto_meta`) mantiene sincronizado `monto_actual` y `est
 ### Con Docker (recomendado)
 
 ```bash
-git clone -b ricardo https://github.com/ricardoherbas/metodologia2-turbo.git
-cd metodologia2-turbo
+git clone -https://github.com/Gon-arg/Metodologia_Y_Sistemas_II
+git cd Metodologia_Y_Sistemas_II
 docker compose up --build
 ```
 
