@@ -1,7 +1,7 @@
-# Metodolog-a-Y-Sistemas-II
-
+# Metodología y Sistemas II
 
 **Integrantes del Proyecto:**
+
 - Ricardo Herbas
 - Celina Vega
 - Gonzalo Herrera
@@ -29,20 +29,20 @@ Aplicación de **finanzas personales** compuesta por una API REST (Node.js, Expr
 - **Actualización automática** del progreso de una meta de ahorro mediante triggers de PostgreSQL: cada vez que se inserta, edita o elimina un aporte, se recalcula `monto_actual` y el `estado` (`en proceso` / `completada`).
 - **Consultas en lenguaje natural**: el endpoint de IA traduce una pregunta en español a una consulta SQL segura (scoped al usuario), la ejecuta contra la base y devuelve una respuesta en lenguaje natural.
 - **Entorno reproducible** con Docker Compose: API, base de datos, pgAdmin y el motor de IA (Ollama) levantan con un solo comando.
-- **Frontend web** en JavaScript vanilla (sin frameworks) con dashboard, gestión de movimientos/categorías/metas y una pantalla de asistente de IA.
+- **Frontend web** en JavaScript vanilla (sin frameworks de JS) con **Tailwind CSS** para el estilado, dashboard, gestión de movimientos/categorías/metas y una pantalla de asistente de IA.
 
 ## Stack tecnológico
 
-| Capa | Tecnología |
-|---|---|
-| Runtime | Node.js 20 (Alpine) |
-| Framework HTTP | Express 5 |
-| Base de datos | PostgreSQL 17 |
-| Autenticación | JWT (`jsonwebtoken`) + `bcrypt` |
-| IA / LLM | Ollama (`qwen2.5-coder:14b`) |
-| Administración de BD | pgAdmin 4 |
-| Frontend | HTML + CSS + JavaScript (ES Modules), sin frameworks ni bundler |
-| Contenedores | Docker / Docker Compose |
+| Capa                 | Tecnología                                                      |
+| -------------------- | --------------------------------------------------------------- |
+| Runtime              | Node.js 20 (Alpine)                                             |
+| Framework HTTP       | Express 5                                                       |
+| Base de datos        | PostgreSQL 17                                                   |
+| Autenticación        | JWT (`jsonwebtoken`) + `bcrypt`                                 |
+| IA / LLM             | Ollama (`qwen2.5-coder:14b`)                                    |
+| Administración de BD | pgAdmin 4                                                       |
+| Frontend             | HTML + JavaScript (ES Modules) + **Tailwind CSS** (vía CDN), sin bundler |
+| Contenedores         | Docker / Docker Compose                                         |
 
 ## Estructura del proyecto
 
@@ -103,7 +103,7 @@ Un trigger (`actualizar_monto_meta`) mantiene sincronizado `monto_actual` y `est
 
 ### Con Docker (recomendado)
 
-```bash
+```
 git clone https://github.com/Gon-arg/Metodologia_Y_Sistemas_II
 cd Metodologia_Y_Sistemas_II
 docker compose up --build
@@ -111,21 +111,22 @@ docker compose up --build
 
 Esto levanta cuatro servicios:
 
-| Servicio | Puerto | Descripción |
-|---|---|---|
-| `app` | `3000` | API Express |
-| `db` | `5432` | PostgreSQL (se inicializa con `init.sql`) |
-| `pgadmin` | `8080` | Administración web de la base (`admin@admin.com` / `admin`) |
-| `ollama` | `11434` | Motor de inferencia para el asistente de IA |
+| Servicio  | Puerto  | Descripción                                                 |
+| --------- | ------- | ----------------------------------------------------------- |
+| `app`     | `3000`  | API Express                                                 |
+| `db`      | `5432`  | PostgreSQL (se inicializa con `init.sql`)                   |
+| `pgadmin` | `8080`  | Administración web de la base (`admin@admin.com` / `admin`) |
+| `ollama`  | `11434` | Motor de inferencia para el asistente de IA                 |
 
 > **Primer arranque:** el contenedor `ollama` no trae el modelo `qwen2.5-coder:14b` preinstalado. Antes de usar el endpoint de IA, descargalo dentro del contenedor:
-> ```bash
+>
+> ```
 > docker exec -it ollama ollama pull qwen2.5-coder:14b
 > ```
 
 ### Sin Docker
 
-```bash
+```
 cd backend
 npm install
 # Configurar variables de entorno (ver sección siguiente)
@@ -135,9 +136,9 @@ npm start
 
 ### Frontend
 
-El frontend es HTML/CSS/JS sin build ni dependencias, pero usa **ES Modules** (`import`/`export`), por lo que no se puede abrir el `.html` directamente con doble clic (`file://`): hay que servirlo con un servidor HTTP estático. Con el backend ya corriendo en `http://localhost:3000` (ver más arriba):
+El frontend es HTML/CSS/JS sin build ni dependencias de `npm`, pero usa **ES Modules** (`import`/`export`), por lo que no se puede abrir el `.html` directamente con doble clic (`file://`): hay que servirlo con un servidor HTTP estático. Los estilos se resuelven con **Tailwind CSS cargado vía CDN**, así que no hace falta ningún paso de compilación adicional. Con el backend ya corriendo en `http://localhost:3000` (ver más arriba):
 
-```bash
+```
 git checkout gonza   # o clonar esa rama
 cd finanzas-frontend-vanilla/finanzas-frontend-vanilla
 npx serve .          # o: python3 -m http.server 5500
@@ -149,15 +150,15 @@ Luego abrí la URL que indique el servidor (por ejemplo `http://localhost:5500`)
 
 Configurables en `backend/.env` (o como variables de entorno del contenedor `app`):
 
-| Variable | Descripción | Valor por defecto |
-|---|---|---|
-| `PORT` | Puerto en el que escucha la API | `3000` |
-| `DB_HOST` | Host de PostgreSQL | `db` |
-| `DB_USER` | Usuario de PostgreSQL | `user` |
-| `DB_PASSWORD` | Contraseña de PostgreSQL | `1234` |
-| `DB_NAME` | Nombre de la base de datos | `miapp` |
-| `OLLAMA_URL` | URL del servidor de Ollama | `http://ollama:11434` |
-| `JWT_SECRET` | Clave usada para firmar/verificar los JWT | *(requerida, sin valor por defecto)* |
+| Variable      | Descripción                               | Valor por defecto                    |
+| ------------- | ------------------------------------------ | ------------------------------------ |
+| `PORT`        | Puerto en el que escucha la API           | `3000`                               |
+| `DB_HOST`     | Host de PostgreSQL                        | `db`                                 |
+| `DB_USER`     | Usuario de PostgreSQL                     | `user`                               |
+| `DB_PASSWORD` | Contraseña de PostgreSQL                  | `1234`                               |
+| `DB_NAME`     | Nombre de la base de datos                | `miapp`                              |
+| `OLLAMA_URL`  | URL del servidor de Ollama                | `http://ollama:11434`                |
+| `JWT_SECRET`  | Clave usada para firmar/verificar los JWT | *(requerida, sin valor por defecto)* |
 
 ## Documentación de la API
 
@@ -165,73 +166,73 @@ Base URL: `http://localhost:3000/api`
 
 ### Autenticación — `/auth`
 
-| Método | Ruta | Descripción | Body |
-|---|---|---|---|
-| POST | `/auth/registrar` | Crea un usuario y devuelve token | `{ nombre, email, password }` |
-| POST | `/auth/login` | Inicia sesión y devuelve token | `{ email, password }` |
-| GET | `/auth/perfil` | Devuelve el perfil del usuario autenticado | Header `Authorization: Bearer <token>` |
+| Método | Ruta              | Descripción                                | Body                                   |
+| ------ | ----------------- | ------------------------------------------ | --------------------------------------- |
+| POST   | `/auth/registrar` | Crea un usuario y devuelve token           | `{ nombre, email, password }`          |
+| POST   | `/auth/login`     | Inicia sesión y devuelve token             | `{ email, password }`                  |
+| GET    | `/auth/perfil`    | Devuelve el perfil del usuario autenticado | Header `Authorization: Bearer <token>` |
 
 ### Usuarios — `/usuarios`
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/usuarios` | Lista todos los usuarios |
-| GET | `/usuarios/:id` | Obtiene un usuario por id |
-| POST | `/usuarios` | Crea un usuario |
-| PUT | `/usuarios/:id` | Actualiza un usuario |
-| DELETE | `/usuarios/:id` | Elimina un usuario |
+| Método | Ruta            | Descripción               |
+| ------ | --------------- | -------------------------- |
+| GET    | `/usuarios`     | Lista todos los usuarios  |
+| GET    | `/usuarios/:id` | Obtiene un usuario por id |
+| POST   | `/usuarios`     | Crea un usuario           |
+| PUT    | `/usuarios/:id` | Actualiza un usuario      |
+| DELETE | `/usuarios/:id` | Elimina un usuario        |
 
 ### Categorías — `/categorias`
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/categorias` | Lista todas las categorías |
-| GET | `/categorias/:id` | Obtiene una categoría por id |
-| POST | `/categorias` | Crea una categoría (`{ nombre }`) |
-| PUT | `/categorias/:id` | Actualiza una categoría |
-| DELETE | `/categorias/:id` | Elimina una categoría |
+| Método | Ruta              | Descripción                       |
+| ------ | ----------------- | ---------------------------------- |
+| GET    | `/categorias`     | Lista todas las categorías        |
+| GET    | `/categorias/:id` | Obtiene una categoría por id      |
+| POST   | `/categorias`     | Crea una categoría (`{ nombre }`) |
+| PUT    | `/categorias/:id` | Actualiza una categoría           |
+| DELETE | `/categorias/:id` | Elimina una categoría             |
 
 ### Movimientos — `/movimientos`
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/movimientos` | Lista todos los movimientos |
-| GET | `/movimientos/usuario/:usuario_id` | Movimientos de un usuario |
-| GET | `/movimientos/categoria/:categoria_id` | Movimientos de una categoría |
-| GET | `/movimientos/:id` | Obtiene un movimiento por id |
-| POST | `/movimientos` | Crea un movimiento (`{ usuario_id, categoria_id, tipo, monto, descripcion, fecha }`) |
-| PUT | `/movimientos/:id` | Actualiza un movimiento |
-| DELETE | `/movimientos/:id` | Elimina un movimiento |
+| Método | Ruta                                   | Descripción                                                                          |
+| ------ | --------------------------------------- | ------------------------------------------------------------------------------------- |
+| GET    | `/movimientos`                         | Lista todos los movimientos                                                          |
+| GET    | `/movimientos/usuario/:usuario_id`     | Movimientos de un usuario                                                            |
+| GET    | `/movimientos/categoria/:categoria_id` | Movimientos de una categoría                                                         |
+| GET    | `/movimientos/:id`                     | Obtiene un movimiento por id                                                         |
+| POST   | `/movimientos`                         | Crea un movimiento (`{ usuario_id, categoria_id, tipo, monto, descripcion, fecha }`) |
+| PUT    | `/movimientos/:id`                     | Actualiza un movimiento                                                              |
+| DELETE | `/movimientos/:id`                     | Elimina un movimiento                                                                |
 
 `tipo` acepta únicamente `"gasto"` o `"ingreso"`.
 
 ### Metas de ahorro — `/metas-ahorro`
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/metas-ahorro` | Lista todas las metas |
-| GET | `/metas-ahorro/usuario/:usuario_id` | Metas de un usuario |
-| GET | `/metas-ahorro/:id` | Obtiene una meta por id |
-| POST | `/metas-ahorro` | Crea una meta (`{ usuario_id, nombre, monto_objetivo, fecha_limite }`) |
-| PUT | `/metas-ahorro/:id` | Actualiza una meta |
-| DELETE | `/metas-ahorro/:id` | Elimina una meta |
+| Método | Ruta                                | Descripción                                                            |
+| ------ | ------------------------------------ | ------------------------------------------------------------------------ |
+| GET    | `/metas-ahorro`                     | Lista todas las metas                                                  |
+| GET    | `/metas-ahorro/usuario/:usuario_id` | Metas de un usuario                                                    |
+| GET    | `/metas-ahorro/:id`                 | Obtiene una meta por id                                                |
+| POST   | `/metas-ahorro`                     | Crea una meta (`{ usuario_id, nombre, monto_objetivo, fecha_limite }`) |
+| PUT    | `/metas-ahorro/:id`                 | Actualiza una meta                                                     |
+| DELETE | `/metas-ahorro/:id`                 | Elimina una meta                                                       |
 
 ### Aportes a metas — `/aportes-metas`
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/aportes-metas` | Lista todos los aportes |
-| GET | `/aportes-metas/meta/:meta_id` | Aportes de una meta puntual |
-| GET | `/aportes-metas/:id` | Obtiene un aporte por id |
-| POST | `/aportes-metas` | Crea un aporte (`{ meta_id, monto, descripcion }`) |
-| PUT | `/aportes-metas/:id` | Actualiza un aporte |
-| DELETE | `/aportes-metas/:id` | Elimina un aporte |
+| Método | Ruta                           | Descripción                                        |
+| ------ | ------------------------------- | ---------------------------------------------------- |
+| GET    | `/aportes-metas`               | Lista todos los aportes                            |
+| GET    | `/aportes-metas/meta/:meta_id` | Aportes de una meta puntual                        |
+| GET    | `/aportes-metas/:id`           | Obtiene un aporte por id                           |
+| POST   | `/aportes-metas`               | Crea un aporte (`{ meta_id, monto, descripcion }`) |
+| PUT    | `/aportes-metas/:id`           | Actualiza un aporte                                |
+| DELETE | `/aportes-metas/:id`           | Elimina un aporte                                  |
 
 ### Asistente de IA — `/ia`
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| POST | `/ia/consultar` | Responde una pregunta en lenguaje natural sobre las finanzas del usuario |
+| Método | Ruta            | Descripción                                                              |
+| ------ | ---------------- | --------------------------------------------------------------------------- |
+| POST   | `/ia/consultar` | Responde una pregunta en lenguaje natural sobre las finanzas del usuario |
 
 ## Asistente de IA
 
@@ -261,28 +262,30 @@ Reglas aplicadas al generar el SQL: las consultas quedan siempre filtradas por e
 
 ## Frontend
 
-Está dentro de `finanzas-frontend-vanilla/finanzas-frontend-vanilla/`. Es un frontend **vanilla** (HTML + CSS + JavaScript con ES Modules), sin frameworks, sin bundler y sin dependencias de `npm`.
+Está dentro de `finanzas-frontend-vanilla/finanzas-frontend-vanilla/`. Es un frontend **vanilla** (HTML + JavaScript con ES Modules), sin frameworks de JS, sin bundler y sin dependencias de `npm`. Los estilos se manejan con **Tailwind CSS**, incorporado vía CDN en cada página HTML.
 
 ### Cómo está armado
 
+- **`<script src="https://cdn.tailwindcss.com"></script>`** se incluye en el `<head>` de cada archivo HTML para habilitar las clases utilitarias de Tailwind sin necesidad de un paso de build.
 - **`js/config.js`** define `API_BASE_URL` (por defecto `http://localhost:3000/api`). Es el único lugar a tocar si el backend corre en otra URL.
 - **`js/api/client.js`** es un wrapper sobre `fetch` usado por todos los módulos de `js/api/`: arma la URL completa, agrega el header `Authorization: Bearer <token>` cuando hay sesión, parsea JSON y normaliza los mensajes de error del backend.
 - **`js/store/authStore.js`** guarda el token y los datos del usuario en `localStorage` (`finanzas_token`, `finanzas_usuario`) y expone `isAuthenticated()`.
 - **`js/utils/protectedPage.js`** se importa como primera línea de cada página privada: si no hay sesión, redirige a `login.html`.
-- Cada página HTML tiene su propio script en `js/pages/` (ej. `dashboard.html` ↔ `js/pages/dashboard.js`), y comparte componentes de `js/components/` como el `navbar` (usuario + logout) y el `sidebar` (navegación entre Dashboard, Movimientos, Categorías, Metas, Asistente IA y Perfil).
+- Cada página HTML tiene su propio script en `js/pages/` (ej. `dashboard.html` ↔ `js/pages/dashboard.js`), y comparte componentes de `js/components/` como el `navbar` (usuario + logout) y el `sidebar` (navegación entre Dashboard, Movimientos, Categorías, Metas, Asistente IA y Perfil), todos maquetados con clases de Tailwind.
+- La carpeta `css/` se mantiene para estilos puntuales (reset, variables, ajustes que Tailwind no cubre), pero el grueso del maquetado se resuelve con clases utilitarias en el propio HTML.
 
 ### Páginas
 
-| Página | Descripción |
-|---|---|
-| `login.html` | Inicio de sesión |
-| `registro.html` | Alta de usuario |
-| `dashboard.html` | Resumen de ingresos/gastos, gasto por categoría y metas activas |
-| `movimientos.html` | Listado y carga de movimientos |
-| `categorias.html` | Listado y alta de categorías |
-| `metas.html` / `meta-detalle.html` | Metas de ahorro y detalle con sus aportes |
-| `asistente-ia.html` | Chat contra el endpoint de IA del backend |
-| `perfil.html` | Datos del usuario logueado |
+| Página                             | Descripción                                                     |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `login.html`                       | Inicio de sesión                                                |
+| `registro.html`                    | Alta de usuario                                                 |
+| `dashboard.html`                   | Resumen de ingresos/gastos, gasto por categoría y metas activas |
+| `movimientos.html`                 | Listado y carga de movimientos                                  |
+| `categorias.html`                  | Listado y alta de categorías                                    |
+| `metas.html` / `meta-detalle.html` | Metas de ahorro y detalle con sus aportes                       |
+| `asistente-ia.html`                | Chat contra el endpoint de IA del backend                       |
+| `perfil.html`                      | Datos del usuario logueado                                      |
 
 ### Estado actual
 
@@ -298,4 +301,5 @@ A la fecha, no todo el frontend está implementado con la misma profundidad:
 - El endpoint `POST /api/ia/consultar` valida que el usuario indicado exista y aísla los datos por `usuarioId`, pero actualmente se expone sin exigir un token válido (el middleware `verificarToken` está comentado en `routes/ia.route.js`).
 - El frontend tiene la URL de la API **hardcodeada** en `js/config.js`; si el backend no corre en `localhost:3000`, hay que editarla ahí.
 - El backend habilita `cors()` sin restricciones, así que el frontend puede consumirlo desde cualquier origen/puerto en desarrollo.
+- Al usar Tailwind vía CDN, no hay un `tailwind.config.js` que purgue clases no usadas ni permite personalizar el tema; para producción convendría migrar a una instalación con build (Tailwind CLI o PostCSS) para reducir el peso del CSS final.
 - Proyecto desarrollado en el marco de la materia *Metodología de Sistemas 2*.
