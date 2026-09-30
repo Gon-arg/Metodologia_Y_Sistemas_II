@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Resumen</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/reset.css" />
+<link rel="stylesheet" href="css/variables.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/pages.css" />
+</head>
+<body class="bg-gray-50 min-h-screen p-6">
+
+<h2 class="text-2xl font-bold text-gray-800 mb-6">Resumen de tus finanzas</h2>
+
+<div class="space-y-3 max-w-md">
+    <button id="btn-gasto-mes" class="w-full text-left bg-white shadow rounded-lg p-4 hover:bg-gray-50">
+    ¿Cuánto gasté este mes?
+    </button>
+    <div id="resp-gasto-mes" class="hidden bg-blue-50 text-gray-700 rounded-lg p-3 text-sm"></div>
+
+    <button id="btn-categoria-top" class="w-full text-left bg-white shadow rounded-lg p-4 hover:bg-gray-50">
+    ¿En qué categoría gasté más?
+    </button>
+    <div id="resp-categoria-top" class="hidden bg-blue-50 text-gray-700 rounded-lg p-3 text-sm"></div>
+
+    <button id="btn-comparacion" class="w-full text-left bg-white shadow rounded-lg p-4 hover:bg-gray-50">
+    ¿Cómo estoy vs. el mes pasado?
+    </button>
+    <div id="resp-comparacion" class="hidden bg-blue-50 text-gray-700 rounded-lg p-3 text-sm"></div>
+
+    <button id="btn-metas" class="w-full text-left bg-white shadow rounded-lg p-4 hover:bg-gray-50">
+    ¿Cómo van mis metas?
+    </button>
+    <div id="resp-metas" class="hidden bg-blue-50 text-gray-700 rounded-lg p-3 text-sm"></div>
+</div>
+
+<script type="module" src="js/pages/resumen.js"></script>
+</body>
+</html>
