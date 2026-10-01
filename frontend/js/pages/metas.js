@@ -16,6 +16,7 @@ const lista = document.getElementById('lista-metas');
 async function cargarMetas() {
     const respuesta = await metasApi.obtenerPorUsuario(usuario.id);
     metas = respuesta.metas;
+    console.log(metas)
     pintarLista();
 }
 
