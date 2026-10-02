@@ -5,6 +5,11 @@ import { getUsuario } from '../store/authStore.js';
 import * as movimientosApi from '../api/movimientos.js';
 import * as categoriasApi from '../api/categorias.js';
 import * as metasApi from '../api/metasAhorro.js';
+import { renderNavbar } from '../components/navbar.js';
+import { renderSidebar } from '../components/sidebar.js';
+
+renderSidebar('sidebar');
+renderNavbar('navbar');
 
 const usuario = getUsuario();
 
@@ -39,26 +44,25 @@ async function cargarDatos() {
     }
 
     function mesDe(fechaISO) {
-    return fechaISO.split('T')[0].slice(0, 7); //.split('T')[0] corta el string en la letra T y se queda con la primera parte: 2026-09-14
-    }                                          // .slice(0, 7) se queda con los primeros 7 caracteres: 2026-09 (año y mes, sin el dia)                           
-    //Esto nos da una forma facil de comparar si dos fechas son del mismo mes, sin importar el dia exacto.
+    return fechaISO.split('T')[0].slice(0, 7);
+    }
     function mesActual() {
     const hoy = new Date();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // como js cuenta los meses desde 0, le sumamos+1
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
     return `${hoy.getFullYear()}-${mes}`;
     }
 
-    function mesAnterior() {// resta 1 al mes, js maneja solo el cambio del año
+    function mesAnterior() {
     const hoy = new Date();
     hoy.setMonth(hoy.getMonth() - 1);
     const mes = String(hoy.getMonth() + 1).padStart(2, '0');
     return `${hoy.getFullYear()}-${mes}`;
     }
 
-    function totalGastosDelMes(mesBuscado) { // suma los gastos de un mes 
+    function totalGastosDelMes(mesBuscado) {
     return movimientos
-        .filter((m) => m.tipo === 'gasto' && mesDe(m.fecha) === mesBuscado) // recorre todos los movimientos y se queda solo con los que cumplen la condicion
-        .reduce((suma, m) => suma + Number(m.monto), 0); // toma ese array ya filtrado y lo "reduce" a un solo numero, sumando el monto de cada uno.
+        .filter((m) => m.tipo === 'gasto' && mesDe(m.fecha) === mesBuscado)
+        .reduce((suma, m) => suma + Number(m.monto), 0);
     }
 
     document.getElementById('btn-gasto-mes').addEventListener('click', () => {
