@@ -2,14 +2,12 @@
 // Funciones contra /api/categorias.
 import { get, post, put, del } from './client.js';
 
-// { ok, categorias: [...] }
 export function obtenerTodas() {
-    
+    return get('/categorias');
 }
 
-// { ok, categoria }
 export function obtenerPorId(id) {
-    
+    return get(`/categorias/${id}`);
 }
 
 // { nombre }
