@@ -1,40 +1,20 @@
-
-// guardProtectedPage() + ver/editar datos del usuario logueado (GET/PUT /usuarios/:id)
+// Datos personales y claves y seguridad del usuario logueado.
 import { guardProtectedPage } from '../utils/protectedPage.js';
 guardProtectedPage();
 
-import { getUsuario, getToken, setSession } from '../store/authStore.js';
-import * as authApi from '../api/auth.js';
-import * as usuariosApi from '../api/usuarios.js';
+import { getUsuario } from '../store/authStore.js';
+import { renderNavbar } from '../components/navbar.js';
+import { renderSidebar } from '../components/sidebar.js';
 
-const usuario = getUsuario();
+renderNavbar('navbar');
+renderSidebar('sidebar');
 
-const form = document.getElementById('form-perfil');
-const inputNombre = document.getElementById('nombre');
-const inputEmail = document.getElementById('email');
-const mensaje = document.getElementById('mensaje-perfil');
+const usuario = getUsuario() || {};
+document.getElementById('nombre').value = usuario.nombre || '';
+document.getElementById('email').value = usuario.email || '';
+document.getElementById('avatar-iniciales').textContent =
+  (usuario.nombre || 'U').trim().split(/\s+/).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
 
-async function cargarPerfil() {
-    const respuesta = await authApi.getPerfil();
-    inputNombre.value = respuesta.usuario.nombre;
-    inputEmail.value = respuesta.usuario.email;
-}
-
-form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const datos = {
-    nombre: inputNombre.value,
-    email: inputEmail.value,
-    password: document.getElementById('password').value,
-    };
-
-    const respuesta = await usuariosApi.actualizar(usuario.id, datos);
-
-    setSession(getToken(), respuesta.usuario);
-    
-    mensaje.textContent = 'Datos actualizados correctamente.';
-    form.reset(); // por seguridad, no dejamos la contraseña escrita en pantalla
-    cargarPerfil(); // recargamos nombre/email en el formulario después del reset
-});
-cargarPerfil();
+// TODO: conectar los formularios con js/api/usuarios.js (PUT /usuarios/:id) cuando esté implementado.
+document.getElementById('form-datos').addEventListener('submit', (e) => e.preventDefault());
+document.getElementById('form-clave').addEventListener('submit', (e) => e.preventDefault());
