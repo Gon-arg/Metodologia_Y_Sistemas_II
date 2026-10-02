@@ -1,29 +1,79 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Mi perfil</title>
-<link rel="stylesheet" href="css/reset.css" />
-<link rel="stylesheet" href="css/variables.css" />
-<link rel="stylesheet" href="css/layout.css" />
-<link rel="stylesheet" href="css/components.css" />
-<link rel="stylesheet" href="css/pages.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perfil · Finanzas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { fondo:'#F3F6F2', tinta:'#1B2B27', verde:{DEFAULT:'#0F5C4D',osc:'#0A4136'}, ambar:'#E8A33D', coral:'#D1495B' },
+        fontFamily: { sans: ['Manrope','system-ui','sans-serif'] }
+      } }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style type="text/tailwindcss">
+    @layer components {
+      .campo { @apply w-full rounded-lg border border-tinta/15 bg-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-verde focus:border-verde; }
+      .btn   { @apply rounded-lg bg-verde hover:bg-verde-osc text-white font-bold px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-verde; }
+    }
+  </style>
 </head>
-<body>
-<!-- Ver/editar datos del usuario logueado. Requiere sesion -->
-<h2>Mi perfil</h2>
+<body class="min-h-screen bg-fondo font-sans text-tinta md:flex">
 
-<form id="form-perfil">
-    <input type="text" id="nombre" placeholder="Nombre" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Confirmá tu contraseña para guardar" required />
+  <div id="sidebar" class="md:w-64 md:shrink-0"></div>
 
-    <button type="submit">Guardar cambios</button>
-</form>
+  <div class="flex-1 min-w-0">
+  <div id="navbar"></div>
+  <main class="px-6 md:px-10 pb-10 max-w-3xl">
+    <h1 class="text-2xl font-extrabold">Mi perfil</h1>
 
-<p id="mensaje-perfil"></p>
+    <section id="datos" class="mt-6 rounded-2xl bg-white p-6 ring-1 ring-tinta/10 scroll-mt-6">
+      <div class="flex items-center gap-4">
+        <div class="h-14 w-14 rounded-full bg-ambar text-tinta text-lg font-extrabold grid place-items-center" id="avatar-iniciales">U</div>
+        <h2 class="text-lg font-bold">Datos personales</h2>
+      </div>
+      <form id="form-datos" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
+        <div>
+          <label for="nombre" class="block text-sm font-semibold mb-1">Nombre</label>
+          <input id="nombre" name="nombre" type="text" class="campo" />
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-semibold mb-1">Email</label>
+          <input id="email" name="email" type="email" class="campo" />
+        </div>
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn">Guardar cambios</button>
+        </div>
+      </form>
+    </section>
 
-<script type="module" src="js/pages/perfil.js"></script>
-</body>
+    <section id="seguridad" class="mt-6 rounded-2xl bg-white p-6 ring-1 ring-tinta/10 scroll-mt-6">
+      <h2 class="text-lg font-bold">Claves y seguridad</h2>
+      <form id="form-clave" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
+        <div class="sm:col-span-2">
+          <label for="clave-actual" class="block text-sm font-semibold mb-1">Contraseña actual</label>
+          <input id="clave-actual" type="password" autocomplete="current-password" class="campo" />
+        </div>
+        <div>
+          <label for="clave-nueva" class="block text-sm font-semibold mb-1">Contraseña nueva</label>
+          <input id="clave-nueva" type="password" autocomplete="new-password" minlength="6" class="campo" />
+        </div>
+        <div>
+          <label for="clave-repetir" class="block text-sm font-semibold mb-1">Repetir contraseña nueva</label>
+          <input id="clave-repetir" type="password" autocomplete="new-password" class="campo" />
+        </div>
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn">Cambiar contraseña</button>
+        </div>
+      </form>
+    </section>
+  </main>
+  </div>
+
+  <script type="module" src="js/pages/perfil.js"></script>
 </body>
 </html>
