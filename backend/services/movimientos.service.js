@@ -23,7 +23,41 @@ const crear=async(usuario_id,categoria_id,tipo,monto,descripcion,fecha)=>{
   return resultado.rows[0]
 }
 const actualizar=async(id,usuario_id,categoria_id,tipo,monto,descripcion,fecha)=>{
-  const resultado=await pool.query('UPDATE movimientos SET usuario_id=$1,categoria_id=$2,tipo=$3,monto=$4,descripcion=$5,fecha=$6 WHERE id=$7 RETURNING id,usuario_id,categoria_id,tipo,monto,descripcion,fecha,creado_en',[usuario_id,categoria_id,tipo,monto,descripcion||null,fecha,id])
+  const campos=[]
+  const valores=[]
+  let posicion=1
+  if(usuario_id!==undefined){
+    campos.push(`usuario_id=$${posicion}`)
+    valores.push(usuario_id)
+    posicion++
+  }
+  if(categoria_id!==undefined){
+    campos.push(`categoria_id=$${posicion}`)
+    valores.push(categoria_id)
+    posicion++
+  }
+  if(tipo!==undefined){
+    campos.push(`tipo=$${posicion}`)
+    valores.push(tipo)
+    posicion++
+  }
+  if(monto!==undefined){
+    campos.push(`monto=$${posicion}`)
+    valores.push(monto)
+    posicion++
+  }
+  if(descripcion!==undefined){
+    campos.push(`descripcion=$${posicion}`)
+    valores.push(descripcion)
+    posicion++
+  }
+  if(fecha!==undefined){
+    campos.push(`fecha=$${posicion}`)
+    valores.push(fecha)
+    posicion++
+  }
+  valores.push(id)
+  const resultado=await pool.query(`UPDATE movimientos SET ${campos.join(',')} WHERE id=$${posicion} RETURNING id,usuario_id,categoria_id,tipo,monto,descripcion,fecha,creado_en`,valores)
   if(resultado.rows.length===0){
     throw new Error('Movimiento no encontrado')
   }

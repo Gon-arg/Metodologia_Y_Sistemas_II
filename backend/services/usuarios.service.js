@@ -24,13 +24,27 @@ const crear=async(nombre,email,password)=>{
   return resultado.rows[0]
 }
 const actualizar=async(id,nombre,email,password)=>{
-  let resultado
+  const campos=[]
+  const valores=[]
+  let posicion=1
+  if(nombre!==undefined){
+    campos.push(`nombre=$${posicion}`)
+    valores.push(nombre)
+    posicion++
+  }
+  if(email!==undefined){
+    campos.push(`email=$${posicion}`)
+    valores.push(email)
+    posicion++
+  }
   if(password!==undefined){
     const passwordHash=await bcrypt.hash(password,10)
-    resultado=await pool.query('UPDATE usuarios SET nombre=$1,email=$2,password_hash=$3 WHERE id=$4 RETURNING id,nombre,email,creado_en',[nombre,email,passwordHash,id])
-  }else{
-    resultado=await pool.query('UPDATE usuarios SET nombre=$1,email=$2 WHERE id=$3 RETURNING id,nombre,email,creado_en',[nombre,email,id])
+    campos.push(`password_hash=$${posicion}`)
+    valores.push(passwordHash)
+    posicion++
   }
+  valores.push(id)
+  const resultado=await pool.query(`UPDATE usuarios SET ${campos.join(',')} WHERE id=$${posicion} RETURNING id,nombre,email,creado_en`,valores)
   if(resultado.rows.length===0){
     throw new Error('Usuario no encontrado')
   }

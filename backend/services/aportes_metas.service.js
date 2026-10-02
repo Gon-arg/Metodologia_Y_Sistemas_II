@@ -19,7 +19,26 @@ const crear=async(meta_id,monto,descripcion)=>{
   return resultado.rows[0]
 }
 const actualizar=async(id,meta_id,monto,descripcion)=>{
-  const resultado=await pool.query('UPDATE aportes_metas SET meta_id=$1,monto=$2,descripcion=$3 WHERE id=$4 RETURNING id,meta_id,monto,fecha,descripcion,creado_en',[meta_id,monto,descripcion||null,id])
+  const campos=[]
+  const valores=[]
+  let posicion=1
+  if(meta_id!==undefined){
+    campos.push(`meta_id=$${posicion}`)
+    valores.push(meta_id)
+    posicion++
+  }
+  if(monto!==undefined){
+    campos.push(`monto=$${posicion}`)
+    valores.push(monto)
+    posicion++
+  }
+  if(descripcion!==undefined){
+    campos.push(`descripcion=$${posicion}`)
+    valores.push(descripcion)
+    posicion++
+  }
+  valores.push(id)
+  const resultado=await pool.query(`UPDATE aportes_metas SET ${campos.join(',')} WHERE id=$${posicion} RETURNING id,meta_id,monto,fecha,descripcion,creado_en`,valores)
   if(resultado.rows.length===0){
     throw new Error('Aporte no encontrado')
   }
