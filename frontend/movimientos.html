@@ -3,33 +3,42 @@
 <head>
 <meta charset="UTF-8" />
 <title>Movimientos</title>
-<link rel="stylesheet" href="css/reset.css" />
-<link rel="stylesheet" href="css/variables.css" />
-<link rel="stylesheet" href="css/layout.css" />
-<link rel="stylesheet" href="css/components.css" />
-<link rel="stylesheet" href="css/pages.css" />
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<!-- Lista + form de movimientos (gasto/ingreso). Requiere sesion -->
-<form id="form-movimiento">
-    <select id="tipo" required>
-        <option value="gasto">Gasto</option>
-        <option value="ingreso">Ingreso</option>
-    </select>
+<body class="bg-gray-50 min-h-screen font-sans">
 
-    <select id="categoria_id" required></select>
+<!--lista + filtro de movimientos (gasto/ingreso).requiere sesion -->
+<!--el alta de movimientos se hace desde categorias.html, aca solo se listan y filtran -->
+<div class="max-w-2xl mx-auto px-4 py-8">
 
-    <input type="number" id="monto" placeholder="Monto" step="0.01" required />
-    <input type="date" id="fecha" required />
-    <input type="text" id="descripcion" placeholder="Descripción (opcional)" />
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Movimientos</h1>
 
-    <button type="submit">Agregar</button>
-</form>
+    <!--menu: solo los 2 botones, visible al entrar -->
+    <div id="menu-filtros" class="flex gap-2 mb-4">
+        <button id="btn-ver-gastos" data-filtro="gasto"
+            class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-lg px-4 py-3 shadow-sm transition-colors">
+            Ver gastos
+        </button>
+        <button id="btn-ver-ingresos" data-filtro="ingreso"
+            class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-lg px-4 py-3 shadow-sm transition-colors">
+            Ver ingresos
+        </button>
+    </div>
 
-<ul id="lista-movimientos"></ul>
+    <!--vista filtrada: oculta hasta que se elige un filtro -->
+    <div id="vista-lista" class="hidden">
+        <button id="btn-volver"
+            class="flex items-center gap-1 text-gray-600 hover:text-gray-800 text-sm font-medium mb-3">
+            ← Volver
+        </button>
+
+        <div class="bg-white rounded-xl shadow p-6">
+            <ul id="lista-movimientos" class="flex flex-col gap-2"></ul>
+        </div>
+    </div>
+
+</div>
 
 <script type="module" src="js/pages/movimientos.js"></script>
 </body>
-</body>
 </html>
-
