@@ -1,28 +1,58 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Metas de ahorro</title>
-<link rel="stylesheet" href="css/reset.css" />
-<link rel="stylesheet" href="css/variables.css" />
-<link rel="stylesheet" href="css/layout.css" />
-<link rel="stylesheet" href="css/components.css" />
-<link rel="stylesheet" href="css/pages.css" />
-</head>
-<body>
-<!-- Lista de metas del usuario con barra de progreso. Requiere sesion -->
-<form id="form-meta">
-    <input type="text" id="nombre-meta" placeholder="Nombre de la meta" required />
-    <input type="number" id="monto-objetivo" placeholder="Monto objetivo" step="0.01" required />
-    <input type="date" id="fecha-limite" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Metas de ahorro · Finanzas</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+        tailwind.config = {
+        theme: { extend: {
+            colors: { fondo:'#F3F6F2', tinta:'#1B2B27', verde:{DEFAULT:'#0F5C4D',osc:'#0A4136'}, ambar:'#E8A33D', coral:'#D1495B' },
+            fontFamily: { sans: ['Manrope','system-ui','sans-serif'] }
+        } }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    </head>
+    <body class="min-h-screen bg-fondo font-sans text-tinta md:flex">
 
-    <button type="submit">Crear meta</button>
-</form>
+    <div id="sidebar" class="md:w-64 md:shrink-0"></div>
 
-<ul id="lista-metas"></ul>
+    <div class="flex-1 min-w-0">
+        <div id="navbar"></div>
 
-<script type="module" src="js/pages/metas.js"></script>
-</body>
-<script type="module" src="js/pages/metas.js"></script>
-</body>
-</html>
+        <main class="mx-auto max-w-xl px-6 pb-12">
+        <h1 class="text-3xl font-extrabold mb-6">Metas de ahorro</h1>
+
+        <!-- form crear meta nueva -->
+        <section class="rounded-2xl bg-white p-6 ring-1 ring-tinta/10 mb-6">
+            <h2 class="text-lg font-bold mb-3">Nueva meta</h2>
+            <form id="form-meta" class="flex flex-col gap-3">
+            <input type="text" id="nombre-meta" placeholder="Nombre de la meta" required
+                class="border border-tinta/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-verde" />
+            <input type="number" id="monto-objetivo" placeholder="Monto objetivo" step="0.01" required
+                class="border border-tinta/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-verde" />
+
+            <div class="flex flex-col gap-1">
+                <label for="fecha-limite" class="text-sm font-semibold text-tinta/70">¿Hasta cuándo querés ahorrar?</label>
+                <input type="date" id="fecha-limite"
+                class="border border-tinta/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-verde" />
+            </div>
+
+            <button type="submit"
+                class="rounded-lg bg-verde hover:bg-verde-osc text-white font-bold px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-verde">
+                Crear meta
+            </button>
+            </form>
+        </section>
+
+        <!--lista de metas -->
+        <ul id="lista-metas" class="flex flex-col gap-3"></ul>
+        </main>
+    </div>
+
+    <script type="module" src="js/pages/metas.js"></script>
+    </body>
+    </html>
