@@ -1,5 +1,5 @@
-// guardProtectedPage() + lista movimientos del usuario, con filtro gasto/ingreso
-// el alta de movimientos se hace desde categorias.html, aca solo se listan y filtran
+// guardProtectedPage() + lista movimientos del usuario con filtro gasto/ingreso
+// el alta de movimientos se hace desde categorias.html aca solo se listan y filtran
 
 import { guardProtectedPage } from '../utils/protectedPage.js';
 guardProtectedPage();
@@ -7,12 +7,17 @@ guardProtectedPage();
 import { getUsuario } from '../store/authStore.js';
 import * as movimientosApi from '../api/movimientos.js';
 import * as categoriasApi from '../api/categorias.js';
+import { renderNavbar } from '../components/navbar.js';
+import { renderSidebar } from '../components/sidebar.js';
 
-const usuario = getUsuario(); //necesitamos saber de que usuario son los movimientos
+renderSidebar('sidebar');
+renderNavbar('navbar');
+
+const usuario = getUsuario();
 
 let movimientos = [];
 let categorias = [];
-let filtroActivo = null; //null = sin filtro elegido todavia'gasto''ingreso'
+let filtroActivo = null;
 
 const lista = document.getElementById('lista-movimientos');
 const menuFiltros = document.getElementById('menu-filtros');
@@ -39,24 +44,24 @@ function pintarLista() {
     const movimientosFiltrados = movimientos.filter((movimiento) => movimiento.tipo === filtroActivo);
 
     if (movimientosFiltrados.length === 0) {
-        lista.innerHTML = `<li class="text-gray-400 text-sm py-4 text-center">No hay movimientos para mostrar.</li>`;
+        lista.innerHTML = `<li class="text-tinta/40 text-sm py-4 text-center">No hay movimientos para mostrar.</li>`;
         return;
     }
 
     const html = movimientosFiltrados.map((movimiento) => {
         const esGasto = movimiento.tipo === 'gasto';
         const signo = esGasto ? '-' : '+';
-        const colorMonto = esGasto ? 'text-red-500' : 'text-green-600';
+        const colorMonto = esGasto ? 'text-coral' : 'text-verde';
 
         return `
-        <li class="flex justify-between items-center border-b border-gray-100 py-2 text-sm">
-            <span class="text-gray-700">
+        <li class="flex justify-between items-center border-b border-tinta/10 py-2 text-sm">
+            <span class="text-tinta/80">
                 ${nombreCategoria(movimiento.categoria_id)} —
-                <span class="${colorMonto} font-medium">${signo}$${movimiento.monto}</span>
+                <span class="${colorMonto} font-bold">${signo}$${movimiento.monto}</span>
                 el ${movimiento.fecha.split('T')[0]}
                 (${movimiento.descripcion || 'sin descripción'})
             </span>
-            <button class="btn-eliminar text-red-500 hover:text-red-700 text-xs font-medium" data-id="${movimiento.id}">
+            <button class="btn-eliminar text-coral hover:text-coral/70 text-xs font-semibold" data-id="${movimiento.id}">
                 Eliminar
             </button>
         </li>
@@ -66,7 +71,6 @@ function pintarLista() {
     lista.innerHTML = html;
 }
 
-//mostrar/ocultar vistas
 function mostrarMenu() {
     filtroActivo = null;
     menuFiltros.classList.remove('hidden');
@@ -88,7 +92,6 @@ botonesFiltro.forEach((boton) => {
 
 botonVolver.addEventListener('click', mostrarMenu);
 
-//eliminar movimiento
 lista.addEventListener('click', async (event) => {
     const boton = event.target.closest('.btn-eliminar');
     if (!boton) return;

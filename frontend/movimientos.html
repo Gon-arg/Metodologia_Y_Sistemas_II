@@ -1,44 +1,61 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<title>Movimientos</title>
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
+    <!doctype html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Movimientos · Finanzas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+        theme: { extend: {
+            colors: { fondo:'#F3F6F2', tinta:'#1B2B27', verde:{DEFAULT:'#0F5C4D',osc:'#0A4136'}, ambar:'#E8A33D', coral:'#D1495B' },
+            fontFamily: { sans: ['Manrope','system-ui','sans-serif'] }
+        } }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    </head>
+    <body class="min-h-screen bg-fondo font-sans text-tinta md:flex">
 
-<!--lista + filtro de movimientos (gasto/ingreso).requiere sesion -->
-<!--el alta de movimientos se hace desde categorias.html, aca solo se listan y filtran -->
-<div class="max-w-2xl mx-auto px-4 py-8">
+    <div id="sidebar" class="md:w-64 md:shrink-0"></div>
 
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Movimientos</h1>
+    <div class="flex-1 min-w-0">
+        <div id="navbar"></div>
 
-    <!--menu: solo los 2 botones, visible al entrar -->
-    <div id="menu-filtros" class="flex gap-2 mb-4">
-        <button id="btn-ver-gastos" data-filtro="gasto"
-            class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-lg px-4 py-3 shadow-sm transition-colors">
-            Ver gastos
-        </button>
-        <button id="btn-ver-ingresos" data-filtro="ingreso"
-            class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-lg px-4 py-3 shadow-sm transition-colors">
-            Ver ingresos
-        </button>
+        <main class="mx-auto max-w-xl px-6 pb-12">
+
+            <!-- lista + filtro de movimientos (gasto/ingreso). requiere sesion -->
+            <!-- el alta de movimientos se hace desde categorias.html, aca solo se listan y filtran -->
+            <h1 class="text-3xl font-extrabold mb-6">Movimientos</h1>
+
+            <!-- menu: solo los 2 botones, visible al entrar -->
+            <div id="menu-filtros" class="flex gap-2 mb-4">
+                <button id="btn-ver-gastos" data-filtro="gasto"
+                    class="flex-1 bg-white ring-1 ring-tinta/10 hover:ring-verde/40 text-tinta font-bold rounded-lg px-4 py-3 transition-all">
+                    Ver gastos
+                </button>
+                <button id="btn-ver-ingresos" data-filtro="ingreso"
+                    class="flex-1 bg-white ring-1 ring-tinta/10 hover:ring-verde/40 text-tinta font-bold rounded-lg px-4 py-3 transition-all">
+                    Ver ingresos
+                </button>
+            </div>
+
+            <!-- vista filtrada: oculta hasta que se elige un filtro -->
+            <div id="vista-lista" class="hidden">
+                <button id="btn-volver"
+                    class="flex items-center gap-1 text-tinta/60 hover:text-tinta text-sm font-semibold mb-3">
+                    ← Volver
+                </button>
+
+                <div class="bg-white rounded-2xl ring-1 ring-tinta/10 p-6">
+                    <ul id="lista-movimientos" class="flex flex-col gap-2"></ul>
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <!--vista filtrada: oculta hasta que se elige un filtro -->
-    <div id="vista-lista" class="hidden">
-        <button id="btn-volver"
-            class="flex items-center gap-1 text-gray-600 hover:text-gray-800 text-sm font-medium mb-3">
-            ← Volver
-        </button>
-
-        <div class="bg-white rounded-xl shadow p-6">
-            <ul id="lista-movimientos" class="flex flex-col gap-2"></ul>
-        </div>
-    </div>
-
-</div>
-
-<script type="module" src="js/pages/movimientos.js"></script>
-</body>
-</html>
+    <script type="module" src="js/pages/movimientos.js"></script>
+    </body>
+    </html>
