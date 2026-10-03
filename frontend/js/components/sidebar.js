@@ -1,6 +1,7 @@
 // Barra lateral: botones CATEGORÍAS / MOVIMIENTOS / METAS AHORRO / RESUMEN.
 // Uso: renderSidebar('sidebar')  (id del contenedor)
 const LINKS = [
+  { href: 'dashboard.html',   texto: 'Dashboard' },
   { href: 'categorias.html',  texto: 'Categorías' },
   { href: 'movimientos.html', texto: 'Movimientos' },
   { href: 'metas.html',       texto: 'Metas ahorro' },
