@@ -30,6 +30,7 @@
         <h2 class="text-lg font-bold">Datos personales</h2>
       </div>
       <form id="form-datos" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
+        <p id="datos-msg" role="status" hidden></p>
         <div>
           <label for="nombre" class="block text-sm font-semibold mb-1">Nombre</label>
           <input id="nombre" name="nombre" type="text" class="campo" />
@@ -47,6 +48,7 @@
     <section id="seguridad" class="mt-6 rounded-2xl bg-white p-6 ring-1 ring-tinta/10 scroll-mt-6">
       <h2 class="text-lg font-bold">Claves y seguridad</h2>
       <form id="form-clave" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
+        <p id="clave-msg" role="status" hidden></p>
         <div class="sm:col-span-2">
           <label for="clave-actual" class="block text-sm font-semibold mb-1">Contraseña actual</label>
           <input id="clave-actual" type="password" autocomplete="current-password" class="campo" />
