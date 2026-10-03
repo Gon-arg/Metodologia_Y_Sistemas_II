@@ -96,3 +96,10 @@ CREATE TRIGGER trg_aportes_delete
 AFTER DELETE ON aportes_metas
 FOR EACH ROW EXECUTE FUNCTION actualizar_monto_meta();
 
+INSERT INTO categorias (nombre) VALUES
+('Alimentos'),
+('Transporte'),
+('Servicios'),
+('Tecnología'),
+('Entretenimiento'),
+('Salud');
