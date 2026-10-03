@@ -26,10 +26,10 @@ export async function request(path, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-        // El backend a veces manda { error: '...' } y a veces { error: [...] } (validadores).
+        // El backend manda { error: '...' }, { error: [...] } (validadores) o { mensaje: '...' } (controllers).
         const mensaje = Array.isArray(data?.error)
         ? data.error.join(' ')
-        : data?.error || 'Ocurrió un error al conectar con el servidor.';
+        : data?.error || data?.mensaje || 'Ocurrió un error al conectar con el servidor.';
         throw new Error(mensaje);
     }
 
