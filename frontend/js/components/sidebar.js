@@ -4,7 +4,7 @@ const LINKS = [
   { href: 'categorias.html',  texto: 'Categorías' },
   { href: 'movimientos.html', texto: 'Movimientos' },
   { href: 'metas.html',       texto: 'Metas ahorro' },
-  { href: 'dashboard.html',   texto: 'Resumen' },
+  { href: 'resumen.html',     texto: 'Resumen' },
 ];
 
 export function renderSidebar(containerId) {
