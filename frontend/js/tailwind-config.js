@@ -19,3 +19,9 @@ tailwind.config = {
     },
   },
 };
+
+// Las clases de Tailwind como flex o grid pisan el atributo [hidden] del navegador,
+// y un elemento con hidden + grid se seguiría viendo. Esta regla hace que hidden siempre gane.
+const estiloHidden = document.createElement('style');
+estiloHidden.textContent = '[hidden] { display: none !important; }';
+document.head.appendChild(estiloHidden);
