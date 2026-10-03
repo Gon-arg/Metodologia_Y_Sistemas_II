@@ -15,9 +15,13 @@ renderSidebar('sidebar');
 const usuario = getUsuario();
 const CATEGORIA_AJUSTE = 'Saldo general'; // categoría interna del dashboard, no se muestra acá
 
-// Categorías básicas: siempre aparecen como botones. Se crean en la base
-// recién la primera vez que se usan, así no hay que escribir el nombre.
-const BASICAS = ['Comida', 'Transporte', 'Viaje', 'Servicios', 'Salud', 'Ocio', 'Ropa', 'Sueldo'];
+// Categorías básicas: siempre aparecen como botones.
+// Las primeras seis vienen cargadas en la base (init.sql), así que se reutilizan.
+// Las últimas (Viaje, Ropa, Sueldo) no están en la base: se crean la primera vez que se usan.
+const BASICAS = [
+  'Alimentos', 'Transporte', 'Servicios', 'Tecnología', 'Entretenimiento', 'Salud', // init.sql
+  'Viaje', 'Ropa', 'Sueldo',                                                         // se crean al usarlas
+];
 
 const listaEl = document.getElementById('lista-categorias');
 const nuevaForm = document.getElementById('form-categoria');
