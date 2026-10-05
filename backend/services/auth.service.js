@@ -39,7 +39,7 @@ const obtenerPerfil = async (id) => {
 }
 const recuperarPassword = async (email) => {
   const resultado = await pool.query(
-    'SELECT id,email FROM usuarios WHERE email=$1',
+    'SELECT id,nombre,email FROM usuarios WHERE email=$1',
     [email]
   )
   if (resultado.rows.length === 0) throw new Error('Usuario no encontrado')
@@ -56,7 +56,7 @@ const recuperarPassword = async (email) => {
     usuario.email,
     'Recuperación de contraseña',
     `
-    <h2>Recuperación de contraseña</h2>
+    <h2>Hola ${usuario.nombre}</h2>
     <p>Recibimos una solicitud para restablecer tu contraseña.</p>
     <p>Hacé clic en el siguiente enlace para crear una nueva contraseña:</p>
     <a href="${enlace}">Restablecer contraseña</a>
