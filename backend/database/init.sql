@@ -102,4 +102,7 @@ INSERT INTO categorias (nombre) VALUES
 ('Servicios'),
 ('Tecnología'),
 ('Entretenimiento'),
-('Salud');
+('Salud'),
+('Viaje'),
+('Ropa'),
+('Sueldo');
