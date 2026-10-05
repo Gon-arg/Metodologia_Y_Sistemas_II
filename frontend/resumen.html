@@ -5,48 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Resumen · Finanzas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-        theme: { extend: {
-            colors: { fondo:'#F3F6F2', tinta:'#1B2B27', verde:{DEFAULT:'#0F5C4D',osc:'#0A4136'}, ambar:'#E8A33D', coral:'#D1495B' },
-            fontFamily: { sans: ['Manrope','system-ui','sans-serif'] }
-        } }
-        }
-    </script>
+    <script src="js/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    </head>
-    <body class="min-h-screen bg-fondo font-sans text-tinta md:flex">
+</head>
+<body class="min-h-screen bg-fondo font-sans text-tinta md:flex">
 
     <div id="sidebar" class="md:w-64 md:shrink-0"></div>
 
     <div class="flex-1 min-w-0">
         <div id="navbar"></div>
 
-        <main class="mx-auto max-w-xl px-6 pb-12">
+    <main class="mx-auto max-w-xl px-6 pb-12">
         <h1 class="text-3xl font-extrabold mb-6">Resumen de tus finanzas</h1>
 
         <div class="flex flex-col gap-3">
             <button id="btn-gasto-mes" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
             ¿Cuánto gasté este mes?
-            </button>
-            <div id="resp-gasto-mes" class="hidden bg-fondo text-tinta/80 rounded-lg p-3 text-sm"></div>
+        </button>
+        <div id="resp-gasto-mes" class="hidden bg-verde/5 border-l-4 border-verde text-tinta rounded-lg p-4 text-base font-medium"></div>
 
-            <button id="btn-categoria-top" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
+        <button id="btn-categoria-top" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
             ¿En qué categoría gasté más?
-            </button>
-            <div id="resp-categoria-top" class="hidden bg-fondo text-tinta/80 rounded-lg p-3 text-sm"></div>
+        </button>
+        <div id="resp-categoria-top" class="hidden bg-verde/5 border-l-4 border-verde text-tinta rounded-lg p-4 text-base font-medium"></div>
 
-            <button id="btn-comparacion" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
+        <button id="btn-comparacion" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
             ¿Cómo estoy vs. el mes pasado?
-            </button>
-            <div id="resp-comparacion" class="hidden bg-fondo text-tinta/80 rounded-lg p-3 text-sm"></div>
+        </button>
+        <div id="resp-comparacion" class="hidden bg-verde/5 border-l-4 border-verde text-tinta rounded-lg p-4 text-base font-medium"></div>
 
-            <button id="btn-metas" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
+        <button id="btn-metas" class="w-full text-left bg-white ring-1 ring-tinta/10 hover:ring-verde/40 rounded-2xl p-4 font-semibold transition-all">
             ¿Cómo van mis metas?
-            </button>
-            <div id="resp-metas" class="hidden bg-fondo text-tinta/80 rounded-lg p-3 text-sm"></div>
-        </div>
+        </button>
+        <div id="resp-metas" class="hidden bg-verde/5 border-l-4 border-verde text-tinta rounded-lg p-4 text-base font-medium"></div>
+            </div>
         </main>
     </div>
 
