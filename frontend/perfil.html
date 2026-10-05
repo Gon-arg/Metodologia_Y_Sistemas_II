@@ -25,9 +25,15 @@
     <h1 class="text-2xl font-extrabold">Mi perfil</h1>
 
     <section id="datos" class="mt-6 rounded-2xl bg-white p-6 ring-1 ring-tinta/10 scroll-mt-6">
-      <div class="flex items-center gap-4">
-        <div class="h-14 w-14 rounded-full bg-ambar text-tinta text-lg font-extrabold grid place-items-center" id="avatar-iniciales">U</div>
-        <h2 class="text-lg font-bold">Datos personales</h2>
+      <h2 class="text-lg font-bold">Datos personales</h2>
+
+      <!-- Perfil del usuario -->
+      <div class="mt-4 flex items-center gap-4 rounded-xl bg-fondo p-4">
+        <div class="h-16 w-16 shrink-0 rounded-full bg-ambar text-tinta text-xl font-extrabold grid place-items-center" id="avatar-iniciales">U</div>
+        <div class="min-w-0">
+          <p id="perfil-nombre" class="truncate text-lg font-extrabold"></p>
+          <p id="perfil-email" class="truncate text-sm text-tinta/60"></p>
+        </div>
       </div>
       <form id="form-datos" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
         <p id="datos-msg" role="status" hidden></p>

@@ -27,7 +27,22 @@ function pintarDatos() {
   inputNombre.value = usuario.nombre || '';
   inputEmail.value = usuario.email || '';
   document.getElementById('avatar-iniciales').textContent = iniciales(usuario.nombre);
+  document.getElementById('perfil-nombre').textContent = usuario.nombre || '';
+  document.getElementById('perfil-email').textContent = usuario.email || '';
 }
+
+// ---- Una sola sección a la vez, según el link: perfil.html#datos o perfil.html#seguridad ----
+const SECCIONES = ['datos', 'seguridad'];
+
+function mostrarSeccion() {
+  const pedida = location.hash.replace('#', '');
+  const activa = SECCIONES.includes(pedida) ? pedida : 'datos'; // por defecto, datos personales
+  for (const id of SECCIONES) {
+    document.getElementById(id).hidden = id !== activa;
+  }
+}
+
+window.addEventListener('hashchange', mostrarSeccion);
 
 function aviso(elementoId, texto, ok = true) {
   const el = document.getElementById(elementoId);
@@ -107,3 +122,4 @@ formClave.addEventListener('submit', (event) => {
 });
 
 pintarDatos();
+mostrarSeccion();

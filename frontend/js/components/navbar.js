@@ -53,6 +53,8 @@ export function renderNavbar(containerId) {
     if (!btn.contains(e.target) && !menu.contains(e.target)) cerrar();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
+  // Si ya estás en Perfil, el link solo cambia el # y la página no se recarga: se cierra el menú a mano
+  menu.addEventListener('click', (e) => { if (e.target.closest('a')) cerrar(); });
 
   document.getElementById('btn-logout').addEventListener('click', () => {
     // Si authStore ya tiene función de logout, usala acá.
