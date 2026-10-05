@@ -1,88 +1,93 @@
-const validateCrearUsuario=(req,res,next)=>{
-  const {nombre,email,password}=req.body
-  const error=[]
-  if(nombre===undefined){
-    error.push('El nombre es obligatorio.')
-  }
-  if(nombre!==undefined&&typeof nombre!=='string'){
-    error.push('El nombre debe ser un texto válido.')
-  }
-  if(nombre!==undefined&&typeof nombre==='string'&&nombre.trim().length===0){
-    error.push('El nombre no puede estar vacío.')
-  }
-  if(nombre!==undefined&&typeof nombre==='string'&&nombre.length>100){
-    error.push('El nombre no puede superar los 100 caracteres.')
-  }
-  if(email===undefined){
-    error.push('El email es obligatorio.')
-  }
-  if(email!==undefined&&typeof email!=='string'){
-    error.push('El email debe ser un texto válido.')
-  }
-  if(email!==undefined&&typeof email==='string'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    error.push('El email no tiene un formato válido.')
-  }
-  if(email!==undefined&&typeof email==='string'&&email.length>150){
-    error.push('El email no puede superar los 150 caracteres.')
-  }
-  if(password===undefined){
-    error.push('La contraseña es obligatoria.')
-  }
-  if(password!==undefined&&typeof password!=='string'){
-    error.push('La contraseña debe ser un texto válido.')
-  }
-  if(password!==undefined&&typeof password==='string'&&password.length<6){
-    error.push('La contraseña debe tener al menos 6 caracteres.')
-  }
-  if(password!==undefined&&typeof password==='string'&&password.length>255){
-    error.push('La contraseña no puede superar los 255 caracteres.')
-  }
-  if(error.length>0){
-    return res.status(400).json({error})
-  }
-  req.body.nombre=nombre.trim()
-  req.body.email=email.trim().toLowerCase()
-  next()
+const validar = require('../utils/validator')
+const reglaNombre = {
+    requerido: true,
+    tipo: 'string',
+    noVacio: true,
+    max: 100,
+    trim: true,
+    mensajeRequerido:
+        'El nombre es obligatorio.',
+    mensajeTipo:
+        'El nombre debe ser un texto válido.',
+    mensajeVacio:
+        'El nombre no puede estar vacío.',
+    mensajeMax:
+        'El nombre no puede superar los 100 caracteres.'
 }
-const validateActualizarUsuario=(req,res,next)=>{
-  const {nombre,email,password}=req.body
-  const error=[]
-  if(nombre!==undefined&&typeof nombre!=='string'){
-    error.push('El nombre debe ser un texto válido.')
-  }
-  if(nombre!==undefined&&typeof nombre==='string'&&nombre.trim().length===0){
-    error.push('El nombre no puede estar vacío.')
-  }
-  if(nombre!==undefined&&typeof nombre==='string'&&nombre.length>100){
-    error.push('El nombre no puede superar los 100 caracteres.')
-  }
-  if(email!==undefined&&typeof email!=='string'){
-    error.push('El email debe ser un texto válido.')
-  }
-  if(email!==undefined&&typeof email==='string'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    error.push('El email no tiene un formato válido.')
-  }
-  if(email!==undefined&&typeof email==='string'&&email.length>150){
-    error.push('El email no puede superar los 150 caracteres.')
-  }
-  if(password!==undefined&&typeof password!=='string'){
-    error.push('La contraseña debe ser un texto válido.')
-  }
-  if(password!==undefined&&typeof password==='string'&&password.length<6){
-    error.push('La contraseña debe tener al menos 6 caracteres.')
-  }
-  if(password!==undefined&&typeof password==='string'&&password.length>255){
-    error.push('La contraseña no puede superar los 255 caracteres.')
-  }
-  if(error.length>0){
-    return res.status(400).json({error})
-  }
-  if(nombre!==undefined){
-    req.body.nombre=nombre.trim()
-  }
-  if(email!==undefined){
-    req.body.email=email.trim().toLowerCase()
-  }
-  next()
+const reglaEmail = {
+    requerido: true,
+    tipo: 'string',
+    max: 150,
+    trim: true,
+    minusculas: true,
+    regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    mensajeRequerido:
+        'El email es obligatorio.',
+    mensajeTipo:
+        'El email debe ser un texto válido.',
+    mensajeRegex:
+        'El email no tiene un formato válido.',
+    mensajeMax:
+        'El email no puede superar los 150 caracteres.'
 }
-module.exports={validateCrearUsuario,validateActualizarUsuario}
+const reglaPassword = {
+    requerido: true,
+    tipo: 'string',
+    min: 6,
+    max: 255,
+    mensajeRequerido:
+        'La contraseña es obligatoria.',
+    mensajeTipo:
+        'La contraseña debe ser un texto válido.',
+    mensajeMin:
+        'La contraseña debe tener al menos 6 caracteres.',
+    mensajeMax:
+        'La contraseña no puede superar los 255 caracteres.'
+}
+const reglasUsuario = {
+    nombre: {
+        ...reglaNombre
+    },
+    email: {
+        ...reglaEmail
+    },
+    password: {
+        ...reglaPassword
+    }
+}
+const reglasActualizarUsuario =
+    Object.fromEntries(
+        Object.entries(reglasUsuario).map(
+            ([campo, reglas]) => [
+                campo,
+                {
+                    ...reglas,
+                    requerido: false
+                }
+            ]
+        )
+    )
+const validateCrearUsuario = (req, res, next) => {
+    const error = validar(
+        req.body,
+        reglasUsuario
+    )
+    if (error.length > 0) {
+        return res.status(400).json({ error })
+    }
+    next()
+}
+const validateActualizarUsuario = (req, res, next) => {
+    const error = validar(
+        req.body,
+        reglasActualizarUsuario
+    )
+    if (error.length > 0) {
+        return res.status(400).json({ error })
+    }
+    next()
+}
+module.exports = {
+    validateCrearUsuario,
+    validateActualizarUsuario
+}
