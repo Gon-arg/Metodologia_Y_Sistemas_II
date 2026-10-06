@@ -28,9 +28,18 @@ async function cargarDashboard() {
     ]);
     pintarTotal(resMovimientos.movimientos);
     pintarTortaPorCategoria(resMovimientos.movimientos, resCategorias.categorias);
+    actualizarFormSaldo(resMovimientos.movimientos, resCategorias.categorias);
   } catch (err) {
     alert('Error cargando el dashboard: ' + err.message);
   }
+}
+
+// El saldo se ingresa una sola vez: si ya hay un movimiento en "Saldo general", se oculta el formulario.
+// Se deduce de los datos (no del navegador), así sigue oculto aunque cambies de dispositivo.
+function actualizarFormSaldo(movimientos, categorias) {
+  const cat = categorias.find((c) => c.nombre === CATEGORIA_AJUSTE);
+  const yaIngresado = Boolean(cat) && movimientos.some((m) => Number(m.categoria_id) === Number(cat.id));
+  document.getElementById('saldo-form').hidden = yaIngresado;
 }
 
 function pintarTotal(movimientos) {
@@ -63,14 +72,6 @@ function pintarTortaPorCategoria(movimientos, categorias) {
   }
 
   document.getElementById('sin-datos').hidden = valores.length > 0;
-
-  // Categorías en negativo (gastaste más de lo que ingresó): se avisa debajo del gráfico
-  const negativas = Object.entries(saldos).filter(([, v]) => v < 0).map(([n]) => n);
-  const avisoEl = document.getElementById('aviso-negativas');
-  avisoEl.textContent = negativas.length
-    ? `En ${negativas.join(', ')} gastaste más de lo que ingresó, por eso no aparece en el gráfico.`
-    : '';
-  avisoEl.hidden = negativas.length === 0;
 
   if (grafico) grafico.destroy();
   grafico = new window.Chart(document.getElementById('grafico-saldo'), {
