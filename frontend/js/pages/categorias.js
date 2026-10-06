@@ -1,4 +1,4 @@
-// guardProtectedPage() + categorías básicas siempre visibles + "+" para crear otras
+// guardProtectedPage() + categorías cargadas desde el backend + "+" para crear otras
 // + formulario de movimiento (gasto/ingreso + monto) que alimenta el gráfico del dashboard.
 import { guardProtectedPage } from '../utils/protectedPage.js';
 guardProtectedPage();
@@ -15,25 +15,16 @@ renderSidebar('sidebar');
 const usuario = getUsuario();
 const CATEGORIA_AJUSTE = 'Saldo general'; // categoría interna del dashboard, no se muestra acá
 
-// Categorías básicas: siempre aparecen como botones.
-// Las primeras seis vienen cargadas en la base (init.sql), así que se reutilizan.
-// Las últimas (Viaje, Ropa, Sueldo) no están en la base: se crean la primera vez que se usan.
-const BASICAS = [
-  'Alimentos', 'Transporte', 'Servicios', 'Tecnología', 'Entretenimiento', 'Salud', // init.sql
-  'Viaje', 'Ropa', 'Sueldo',                                                         // se crean al usarlas
-];
-
 const listaEl = document.getElementById('lista-categorias');
 const nuevaForm = document.getElementById('form-categoria');
 const movForm = document.getElementById('movimiento-form');
 const elegidaEl = document.getElementById('categoria-elegida');
 const msgEl = document.getElementById('movimiento-msg');
 
-let categorias = [];      // categorías que existen en la base
-let seleccionada = null;  // { nombre, id }  (id es null si es básica y todavía no existe)
+let categorias = [];
+let seleccionada = null;
 
 const clave = (nombre) => nombre.trim().toLowerCase();
-const buscarExistente = (nombre) => categorias.find((c) => clave(c.nombre) === clave(nombre));
 
 function aviso(texto, ok = true) {
   msgEl.textContent = texto;
@@ -41,20 +32,10 @@ function aviso(texto, ok = true) {
   msgEl.hidden = false;
 }
 
-// Básicas primero (existan o no) y después las que creó el usuario
-function itemsVisibles() {
-  const basicas = BASICAS.map((nombre) => ({ nombre, id: buscarExistente(nombre)?.id ?? null }));
-  const claves = new Set(BASICAS.map(clave));
-  const propias = categorias
-    .filter((c) => !claves.has(clave(c.nombre)))
-    .map((c) => ({ nombre: c.nombre, id: c.id }));
-  return [...basicas, ...propias];
-}
-
 function pintarCategorias() {
   listaEl.innerHTML = '';
 
-  for (const item of itemsVisibles()) {
+  for (const item of categorias) {
     const activo = seleccionada && clave(seleccionada.nombre) === clave(item.nombre);
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -92,7 +73,7 @@ async function cargarCategorias() {
   } catch (err) {
     aviso('No se pudieron cargar las categorías: ' + err.message, false);
   }
-  pintarCategorias(); // aunque falle la API se ven las básicas
+  pintarCategorias();
 }
 
 // Crear categoría propia con el "+"
@@ -102,8 +83,8 @@ nuevaForm.addEventListener('submit', async (event) => {
   const nombre = input.value.trim();
   if (!nombre) return;
 
-  // Si ya existe (básica o propia), solo se elige
-  const existente = itemsVisibles().find((i) => clave(i.nombre) === clave(nombre));
+  // Si ya existe, solo se elige
+  const existente = categorias.find((i) => clave(i.nombre) === clave(nombre));
   if (existente) {
     seleccionada = existente;
     elegidaEl.textContent = existente.nombre;
@@ -138,18 +119,9 @@ movForm.addEventListener('submit', async (event) => {
   if (!(monto > 0)) return aviso('Ingresá un monto mayor a 0.', false);
 
   try {
-    // Si es una básica que todavía no existe en la base, se crea ahora
-    let categoriaId = seleccionada.id;
-    if (categoriaId === null) {
-      const respuesta = await categoriasApi.crear({ nombre: seleccionada.nombre });
-      categoriaId = respuesta.categoria.id;
-      seleccionada = { nombre: seleccionada.nombre, id: categoriaId };
-      await cargarCategorias();
-    }
-
     await movimientosApi.crear({
       usuario_id: usuario.id,
-      categoria_id: categoriaId,
+      categoria_id: seleccionada.id,
       tipo,
       monto,
       descripcion: '',
@@ -157,10 +129,12 @@ movForm.addEventListener('submit', async (event) => {
     });
 
     document.getElementById('monto').value = '';
+
+    // El mensaje solo aparece para ingresos; con un gasto se limpia cualquier aviso anterior
     if (tipo === 'ingreso') {
       aviso(`Ingreso guardado en ${seleccionada.nombre}. Ya figura en el dashboard.`);
     } else {
-      msgEl.hidden = true; // los gastos no muestran mensaje; se limpia cualquier aviso anterior
+      msgEl.hidden = true;
     }
   } catch (err) {
     aviso(err.message, false);
