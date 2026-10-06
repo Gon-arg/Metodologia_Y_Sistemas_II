@@ -16,3 +16,13 @@ export function registrar(nombre, email, password) {
 export function getPerfil() {
     return get('/auth/perfil');
 }
+
+// Pide que se envíe un mail con el link para restablecer la contraseña
+export function recuperarPassword(email) {
+    return post('/auth/recuperar-password', { email });
+}
+
+// Cambia la contraseña usando el token recibido por mail
+export function restablecerPassword(token, nuevaPassword) {
+    return post('/auth/restablecer-password', { token, nuevaPassword });
+}

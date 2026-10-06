@@ -1,7 +1,12 @@
-// Escucha submit del form de login.html -> api/auth.login() -> authStore.setSession() -> redirect a dashboard.html
-// Conecta el form de login.html con la API y con el authStore.
+// escucha submit del form de login.html -> api/auth.login() -> authStore.setSession() -> redirect a dashboard.html
+// conecta el form de login.html con la API y con el authStore.
 import { login } from '../api/auth.js';
-import { setSession } from '../store/authStore.js';
+import { setSession, isAuthenticated } from '../store/authStore.js';
+
+// Si ya hay sesion activa, no tiene sentido mostrar el form de login: mandamos directo al dashboard
+if (isAuthenticated()) {
+  window.location.href = 'dashboard.html';
+}
 
 const form = document.getElementById('login-form');
 const errorEl = document.getElementById('login-error');
