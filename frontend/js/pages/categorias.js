@@ -129,7 +129,13 @@ movForm.addEventListener('submit', async (event) => {
     });
 
     document.getElementById('monto').value = '';
-    aviso(`${tipo === 'gasto' ? 'Gasto' : 'Ingreso'} guardado en ${seleccionada.nombre}. Ya figura en el dashboard.`);
+
+    // El mensaje solo aparece para ingresos; con un gasto se limpia cualquier aviso anterior
+    if (tipo === 'ingreso') {
+      aviso(`Ingreso guardado en ${seleccionada.nombre}. Ya figura en el dashboard.`);
+    } else {
+      msgEl.hidden = true;
+    }
   } catch (err) {
     aviso(err.message, false);
   }
