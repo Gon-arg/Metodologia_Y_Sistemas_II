@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recuperar contraseña · Finanzas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-fondo font-sans text-tinta grid md:grid-cols-2">
+
+    <aside class="hidden md:flex flex-col justify-between bg-verde text-white p-12">
+        <span class="text-xl font-extrabold tracking-tight">Finanzas</span>
+        <div>
+        <p class="text-4xl font-extrabold leading-tight max-w-sm">¿Te olvidaste tu contraseña?</p>
+        <p class="mt-4 text-white/70 max-w-sm">Te mandamos un link a tu email para que puedas crear una nueva.</p>
+        </div>
+        <span class="text-sm text-white/50">Metodología de Sistemas II</span>
+    </aside>
+
+    <main class="flex items-center justify-center p-6">
+        <form id="recuperar-form" class="w-full max-w-sm space-y-5" novalidate>
+        <div>
+            <h1 class="text-2xl font-extrabold">Recuperar contraseña</h1>
+            <p class="text-sm text-tinta/60 mt-1">Ingresá tu email y te mandamos un link para restablecerla.</p>
+        </div>
+
+        <p id="recuperar-error" role="alert" hidden class="rounded-lg bg-coral/10 text-coral text-sm px-3 py-2"></p>
+        <p id="recuperar-exito" role="status" hidden class="rounded-lg bg-verde/10 text-verde text-sm px-3 py-2"></p>
+
+        <div>
+            <label for="email" class="block text-sm font-semibold mb-1">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required
+            class="w-full rounded-lg border border-tinta/15 bg-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-verde focus:border-verde" />
+        </div>
+
+        <button type="submit" id="btn-enviar"
+            class="w-full rounded-lg bg-verde hover:bg-verde-osc text-white font-bold py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-verde">
+            Enviar link
+        </button>
+
+        <p class="text-sm text-center text-tinta/60">
+            <a href="login.html" class="font-semibold text-verde hover:underline">← Volver a iniciar sesión</a>
+        </p>
+        </form>
+    </main>
+
+    <script type="module" src="js/pages/recuperarContrasena.js"></script>
+    </body>
+    </html>
