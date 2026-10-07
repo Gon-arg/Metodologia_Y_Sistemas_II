@@ -1,4 +1,4 @@
-// Lee ?token= de la URL (viene del link del mail) -> api/auth.restablecerPassword()
+// lee token de la URL (viene del link del mail) api/auth.restablecerPassword()
 import { restablecerPassword } from '../api/auth.js';
 
 const parametros = new URLSearchParams(window.location.search);
@@ -9,7 +9,7 @@ const errorEl = document.getElementById('restablecer-error');
 const exitoEl = document.getElementById('restablecer-exito');
 const btnRestablecer = document.getElementById('btn-restablecer');
 
-// Si no hay token en la URL, el link esta roto o incompleto: avisamos y no dejamos enviar
+// si no hay token en la URL, el link esta roto o incompleto: avisamos y no dejamos enviar
 if (!token) {
     errorEl.textContent = 'El link no es válido. Pedí uno nuevo desde "¿Olvidaste tu contraseña?".';
     errorEl.hidden = false;
@@ -29,12 +29,12 @@ form.addEventListener('submit', async (event) => {
 
     try {
         await restablecerPassword(token, nuevaPassword);
-        exitoEl.textContent = 'Contraseña actualizada. Ya podés iniciar sesión.';
+        exitoEl.textContent = 'Contraseña actualizada. Ingresá con tu nueva contraseña. Te estamos llevando a iniciar sesión...';
         exitoEl.hidden = false;
         form.reset();
 
         setTimeout(() => {
-        window.location.href = 'login.html';
+            window.location.href = 'login.html';
         }, 2000);
     } catch (err) {
         errorEl.textContent = err.message;
@@ -42,4 +42,4 @@ form.addEventListener('submit', async (event) => {
         btnRestablecer.disabled = false;
         btnRestablecer.textContent = 'Guardar contraseña';
     }
-    });
+});
