@@ -38,9 +38,13 @@ function formatearFecha(fechaIso) {
 }
 
 async function cargarMetas() {
-    const respuesta = await metasApi.obtenerPorUsuario(usuario.id);
-    metas = respuesta.metas;
-    pintarLista();
+    try {
+        const respuesta = await metasApi.obtenerPorUsuario();
+        metas = respuesta.metas;
+        pintarLista();
+    } catch (err) {
+        lista.innerHTML = `<li class="text-coral text-sm">${err.message}</li>`;
+    }
 }
 
 function pintarLista() {
