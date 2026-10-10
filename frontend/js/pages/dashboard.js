@@ -23,7 +23,7 @@ let balanceActual = 0;
 async function cargarDashboard() {
   try {
     const [resMovimientos, resCategorias] = await Promise.all([
-      movimientosApi.obtenerPorUsuario(usuario.id),
+      movimientosApi.obtenerPorUsuario(),
       categoriasApi.obtenerTodas(),
     ]);
     pintarTotal(resMovimientos.movimientos);

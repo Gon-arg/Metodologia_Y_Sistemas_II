@@ -1,4 +1,4 @@
-// obtenerTodos, obtenerPorUsuario(usuario_id), obtenerPorCategoria(categoria_id), obtenerPorId, crear, actualizar, eliminar -> /movimientos
+// obtenerTodos, obtenerPorUsuario, obtenerPorCategoria(categoria_id), obtenerPorId, crear, actualizar, eliminar -> /movimientos
 // Funciones contra /api/movimientos. Todas devuelven el JSON tal cual lo manda el backend.
 import { get, post, put, del } from './client.js';
 
@@ -8,8 +8,8 @@ export function obtenerTodos() {
 }
 
 // { ok, movimientos: [...] }
-export function obtenerPorUsuario(usuarioId) {
-    return get(`/movimientos/usuario/${usuarioId}`);
+export function obtenerPorUsuario() {
+    return get('/movimientos');
 }
 
 // { ok, movimientos: [...] }
