@@ -7,9 +7,9 @@ export function obtenerTodas() {
     return get('/metas-ahorro');
 }
 
-// { ok, metas: [...] }
-export function obtenerPorUsuario(usuarioId) {
-    return get(`/metas-ahorro/usuario/${usuarioId}`);
+// { ok, metas: [...] } — el backend toma el usuario del token
+export function obtenerPorUsuario() {
+    return get('/metas-ahorro');
 }
 
 // { ok, meta }
