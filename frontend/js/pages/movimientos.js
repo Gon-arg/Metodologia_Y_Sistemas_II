@@ -27,7 +27,7 @@ const botonVolver = document.getElementById('btn-volver');
 
 async function iniciar() {
     const [resMovimientos, resCategorias] = await Promise.all([
-        movimientosApi.obtenerPorUsuario(usuario.id),
+        movimientosApi.obtenerPorUsuario(),
         categoriasApi.obtenerTodas(),
     ]);
 

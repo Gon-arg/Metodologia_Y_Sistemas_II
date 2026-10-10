@@ -19,7 +19,7 @@ let metas = [];
 
 async function cargarDatos() {
     const [resMovimientos, resCategorias, resMetas] = await Promise.all([
-        movimientosApi.obtenerPorUsuario(usuario.id),
+        movimientosApi.obtenerPorUsuario(),
         categoriasApi.obtenerTodas(),
         metasApi.obtenerPorUsuario(usuario.id),
     ]);
