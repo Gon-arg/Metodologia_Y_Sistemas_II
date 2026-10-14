@@ -308,3 +308,4 @@ El frontend todavía no usa los endpoints `GET /aportes-metas` ni `PUT /aportes-
 ## Notas y limitaciones conocidas
 - La URL de la API está fija en `frontend/js/config.js`. Si el backend no corre en `localhost:3000`, hay que editarla ahí.
 - El backend habilita `cors()` sin restricciones, por lo que cualquier origen puede consumirlo. Conviene restringirlo en producción.
+- Se crearon las ramas feature/ia-backend y feature/optimizacion-ia-backend como base para futuras modificaciones de la aplicación. Estas funcionalidades no se integraron en la versión actual del proyecto. Quedan como trabajo pendiente para una posible implementación de un modelo de inteligencia artificial que actúe como asistente de la aplicación, junto con las optimizaciones relacionadas con su funcionamiento.
