@@ -52,6 +52,39 @@ function pintarTotal(movimientos) {
   document.getElementById('saldo-input').placeholder = formatCurrency(balanceActual);
 }
 
+// Porcentaje de una porción respecto del total del gráfico (ej: "35%", o "<1%" si es muy chica)
+function formatearPorcentaje(valor, total) {
+  const p = (valor / total) * 100;
+  return p < 1 ? '<1%' : `${Math.round(p)}%`;
+}
+
+// Dibuja el porcentaje dentro de cada porción de la torta (sin librerías extra)
+const pluginPorcentajes = {
+  id: 'porcentajes',
+  afterDatasetsDraw(chart) {
+    const datos = chart.data.datasets[0].data;
+    const total = datos.reduce((a, b) => a + b, 0);
+    if (!total) return;
+
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = '700 13px Manrope, sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'; // sombra suave para que se lea sobre colores claros
+    ctx.shadowBlur = 3;
+
+    chart.getDatasetMeta(0).data.forEach((arco, i) => {
+      if (!chart.getDataVisibility(i)) return; // porción oculta desde la leyenda
+      if ((datos[i] / total) * 100 < 4) return; // porciones muy chicas: el texto no entra
+      const { x, y } = arco.tooltipPosition();
+      ctx.fillText(formatearPorcentaje(datos[i], total), x, y);
+    });
+    ctx.restore();
+  },
+};
+
 function pintarTortaPorCategoria(movimientos, categorias) {
   const nombrePorCategoria = {};
   for (const cat of categorias) nombrePorCategoria[cat.id] = cat.nombre;
@@ -73,6 +106,8 @@ function pintarTortaPorCategoria(movimientos, categorias) {
 
   document.getElementById('sin-datos').hidden = valores.length > 0;
 
+  const total = valores.reduce((a, b) => a + b, 0);
+
   if (grafico) grafico.destroy();
   grafico = new window.Chart(document.getElementById('grafico-saldo'), {
     type: 'pie',
@@ -89,20 +124,44 @@ function pintarTortaPorCategoria(movimientos, categorias) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'Manrope' } } },
-        tooltip: { callbacks: { label: (c) => ` ${c.label}: ${formatCurrency(c.parsed)}` } },
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            font: { family: 'Manrope' },
+            // Una entrada por porción, con el porcentaje: "Alimentos (35%)"
+            generateLabels: (chart) => {
+              const dataset = chart.data.datasets[0];
+              return chart.data.labels.map((etiqueta, i) => ({
+                text: `${etiqueta} (${formatearPorcentaje(valores[i], total)})`,
+                fillStyle: dataset.backgroundColor[i % dataset.backgroundColor.length],
+                strokeStyle: dataset.borderColor,
+                lineWidth: dataset.borderWidth,
+                pointStyle: 'circle',
+                hidden: !chart.getDataVisibility(i),
+                index: i, // el clic en la leyenda usa este índice para ocultar la porción
+              }));
+            },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (c) => ` ${c.label}: ${formatCurrency(c.parsed)} (${formatearPorcentaje(c.parsed, total)})`,
+          },
+        },
       },
     },
+    plugins: [pluginPorcentajes],
   });
 }
 
-// --- Saldo actual: guarda solo la diferencia como movimiento de "Ajuste de saldo" ---
+// --- Saldo actual: guarda solo la diferencia como movimiento de "Saldo general" ---
 async function obtenerCategoriaAjuste() {
   const res = await categoriasApi.obtenerTodas();
   const existente = res.categorias.find((c) => c.nombre === CATEGORIA_AJUSTE);
   if (existente) return existente.id;
-  const creada = await categoriasApi.crear({ nombre: CATEGORIA_AJUSTE }); // TODO: ajustar al nombre/forma real de tu API
-  return (creada.categoria || creada).id;
+  const creada = await categoriasApi.crear({ nombre: CATEGORIA_AJUSTE }); // { ok, categoria }
+  return creada.categoria.id;
 }
 
 function avisoSaldo(texto, ok = true) {
@@ -122,7 +181,7 @@ document.getElementById('saldo-form').addEventListener('submit', async (event) =
 
   try {
     const categoria_id = await obtenerCategoriaAjuste();
-    await movimientosApi.crear({ // TODO: ajustar al nombre real de tu función
+    await movimientosApi.crear({
       usuario_id: usuario.id,
       categoria_id,
       tipo: diferencia > 0 ? 'ingreso' : 'gasto',
