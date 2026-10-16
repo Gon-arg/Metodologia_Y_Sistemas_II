@@ -22,7 +22,7 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 - [Documentación de la API](#documentación-de-la-api)
 - [Frontend](#frontend)
 - [Notas y limitaciones conocidas](#notas-y-limitaciones-conocidas)
-- [Documentación del proyecto](#documentacion-del-proyecto)
+- [Documentación del proyecto](#documentación-del-proyecto)
 
 ## Características
 
