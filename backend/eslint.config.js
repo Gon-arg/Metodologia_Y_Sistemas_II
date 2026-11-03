@@ -13,7 +13,10 @@ module.exports = [
         languageOptions: {
             ecmaVersion: "latest",
             sourceType: "commonjs",
-            globals: globals.node
+            globals: {
+                ...globals.node,
+                ...globals.jest
+            }
         },
         rules: {
             ...js.configs.recommended.rules,

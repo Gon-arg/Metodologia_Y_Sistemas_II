@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "env-cmd -f .env.test jest --runInBand --detectOpenHandles --forceExit",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/jest": "^30.0.0",
     "env-cmd": "^11.0.0",
     "eslint": "^10.14.0",
     "globals": "^17.14.0",
