@@ -6,6 +6,7 @@ const conexion_db = new Pool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
+  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
   max: 10,                 // máximo de conexiones simultáneas
   idleTimeoutMillis: 30000 // cierra conexiones inactivas a los 30s
 });
