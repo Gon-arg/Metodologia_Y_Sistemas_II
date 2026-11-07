@@ -19,9 +19,10 @@ describe('Metas de ahorro - Service', () => {
     });
 
     describe('obtenerPorUsuario', () => {
-        test('debe devolver las metas del usuario', async () => {
+        test('debe devolver las metas del usuario ordenadas por ID descendente', async () => {
             const metas = [
-                { id: 1, nombre: 'Vacaciones', monto_objetivo: '50000.00' }
+                { id: 2, nombre: 'Vacaciones', monto_objetivo: '50000.00' },
+                { id: 1, nombre: 'Auto', monto_objetivo: '100000.00' }
             ];
 
             pool.query.mockResolvedValue({ rows: metas });
@@ -30,7 +31,7 @@ describe('Metas de ahorro - Service', () => {
 
             expect(resultado).toEqual(metas);
             expect(pool.query).toHaveBeenCalledWith(
-                expect.stringContaining('WHERE usuario_id=$1'),
+                expect.stringContaining('WHERE usuario_id=$1 ORDER BY id DESC'),
                 [10]
             );
         });
@@ -179,6 +180,33 @@ describe('Metas de ahorro - Service', () => {
             expect(pool.query).toHaveBeenCalledWith(
                 expect.stringContaining('SET nombre=$1'),
                 ['Nuevo nombre', 1, 10]
+            );
+        });
+
+        test('debe actualizar solamente la fecha límite', async () => {
+            const meta = {
+                id: 1,
+                usuario_id: 10,
+                nombre: 'Vacaciones',
+                fecha_limite: '2027-12-31'
+            };
+
+            pool.query.mockResolvedValue({ rows: [meta] });
+
+            const resultado = await actualizar(
+                1,
+                10,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                '2027-12-31'
+            );
+
+            expect(resultado).toEqual(meta);
+            expect(pool.query).toHaveBeenCalledWith(
+                expect.stringContaining('SET fecha_limite=$1'),
+                ['2027-12-31', 1, 10]
             );
         });
 

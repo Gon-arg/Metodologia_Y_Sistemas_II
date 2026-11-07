@@ -1,4 +1,3 @@
-
 jest.mock('../config/conexion-db', () => ({
     query: jest.fn()
 }));
@@ -19,15 +18,20 @@ describe('Aportes de metas - Service', () => {
     });
 
     describe('obtenerPorUsuario', () => {
-        test('debe devolver los aportes del usuario', async () => {
+        test('debe devolver los aportes del usuario ordenados por fecha e id', async () => {
             const aportes = [{ id: 1, meta_id: 2, monto: '5000.00' }];
             pool.query.mockResolvedValue({ rows: aportes });
 
             const resultado = await obtenerPorUsuario(10);
 
             expect(resultado).toEqual(aportes);
-            expect(pool.query).toHaveBeenCalledTimes(1);
-            expect(pool.query.mock.calls[0][1]).toEqual([10]);
+            expect(pool.query).toHaveBeenCalledWith(
+                expect.stringContaining('WHERE m.usuario_id=$1'),
+                [10]
+            );
+            expect(pool.query.mock.calls[0][0]).toContain(
+                'ORDER BY a.fecha DESC,a.id DESC'
+            );
         });
 
         test('debe devolver un array vacío si no hay aportes', async () => {
@@ -62,7 +66,7 @@ describe('Aportes de metas - Service', () => {
     });
 
     describe('obtenerPorMeta', () => {
-        test('debe devolver los aportes de una meta del usuario', async () => {
+        test('debe devolver los aportes de una meta del usuario ordenados', async () => {
             const aportes = [{ id: 1, meta_id: 2, monto: '5000.00' }];
             pool.query.mockResolvedValue({ rows: aportes });
 
@@ -72,6 +76,9 @@ describe('Aportes de metas - Service', () => {
             expect(pool.query).toHaveBeenCalledWith(
                 expect.stringContaining('WHERE a.meta_id=$1 AND m.usuario_id=$2'),
                 [2, 10]
+            );
+            expect(pool.query.mock.calls[0][0]).toContain(
+                'ORDER BY a.fecha DESC,a.id DESC'
             );
         });
 
@@ -144,6 +151,50 @@ describe('Aportes de metas - Service', () => {
             expect(resultado).toEqual(aporte);
             expect(pool.query).toHaveBeenCalledTimes(2);
             expect(pool.query.mock.calls[1][1]).toEqual([8000, 1, 10]);
+        });
+
+        test('debe actualizar la meta cuando la nueva meta pertenece al usuario', async () => {
+            const aporte = { id: 1, meta_id: 3, monto: '5000.00' };
+
+            pool.query
+                .mockResolvedValueOnce({ rows: [{ id: 1 }] })
+                .mockResolvedValueOnce({ rows: [{ id: 3 }] })
+                .mockResolvedValueOnce({ rows: [aporte] });
+
+            const resultado = await actualizar(
+                1, 10, 3, undefined, undefined
+            );
+
+            expect(resultado).toEqual(aporte);
+            expect(pool.query).toHaveBeenCalledTimes(3);
+            expect(pool.query.mock.calls[1][1]).toEqual([3, 10]);
+            expect(pool.query.mock.calls[2][1]).toEqual([3, 1, 10]);
+        });
+
+        test('debe actualizar solamente la descripción', async () => {
+            const aporte = {
+                id: 1,
+                meta_id: 2,
+                monto: '5000.00',
+                descripcion: 'Aporte extraordinario'
+            };
+
+            pool.query
+                .mockResolvedValueOnce({ rows: [{ id: 1 }] })
+                .mockResolvedValueOnce({ rows: [aporte] });
+
+            const resultado = await actualizar(
+                1, 10, undefined, undefined, 'Aporte extraordinario'
+            );
+
+            expect(resultado).toEqual(aporte);
+            expect(pool.query).toHaveBeenCalledTimes(2);
+            expect(pool.query.mock.calls[1][0]).toContain('SET descripcion=$1');
+            expect(pool.query.mock.calls[1][1]).toEqual([
+                'Aporte extraordinario',
+                1,
+                10
+            ]);
         });
 
         test('debe rechazar la actualización si el aporte no existe o no pertenece al usuario', async () => {
