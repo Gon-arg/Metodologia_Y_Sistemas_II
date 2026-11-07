@@ -1,4 +1,3 @@
-
 jest.mock('../config/conexion-db', () => ({
     query: jest.fn()
 }));
@@ -23,7 +22,7 @@ describe('Usuarios - Service', () => {
     });
 
     describe('obtenerPorId', () => {
-        test('debe devolver un usuario existente', async () => {
+        test('debe devolver un usuario existente sin exponer su contraseña', async () => {
             const usuario = {
                 id: 10,
                 nombre: 'Juan',
@@ -39,6 +38,7 @@ describe('Usuarios - Service', () => {
                 expect.stringContaining('WHERE id=$1'),
                 [10]
             );
+            expect(pool.query.mock.calls[0][0]).not.toContain('password_hash');
         });
 
         test('debe lanzar error si el usuario no existe', async () => {
@@ -123,6 +123,30 @@ describe('Usuarios - Service', () => {
                 expect.stringContaining('SET nombre=$1'),
                 ['Juan Pérez', 10]
             );
+        });
+
+        test('debe actualizar solamente el email', async () => {
+            const usuario = {
+                id: 10,
+                nombre: 'Juan',
+                email: 'nuevo@example.com'
+            };
+
+            pool.query.mockResolvedValue({ rows: [usuario] });
+
+            const resultado = await actualizar(
+                10,
+                undefined,
+                'nuevo@example.com',
+                undefined
+            );
+
+            expect(resultado).toEqual(usuario);
+            expect(pool.query).toHaveBeenCalledWith(
+                expect.stringContaining('SET email=$1'),
+                ['nuevo@example.com', 10]
+            );
+            expect(bcrypt.hash).not.toHaveBeenCalled();
         });
 
         test('debe generar un hash al actualizar la contraseña', async () => {

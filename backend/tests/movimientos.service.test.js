@@ -48,7 +48,7 @@ describe('Movimientos - Service', () => {
     });
 
     describe('obtenerPorUsuario', () => {
-        test('debe devolver los movimientos del usuario', async () => {
+        test('debe devolver los movimientos del usuario ordenados por fecha e ID descendente', async () => {
             const movimientos = [
                 { id: 2, usuario_id: 10, tipo: 'gasto' },
                 { id: 1, usuario_id: 10, tipo: 'ingreso' }
@@ -60,11 +60,10 @@ describe('Movimientos - Service', () => {
 
             expect(resultado).toEqual(movimientos);
             expect(pool.query).toHaveBeenCalledWith(
-                expect.stringContaining('WHERE usuario_id=$1'),
+                expect.stringContaining(
+                    'WHERE usuario_id=$1 ORDER BY fecha DESC,id DESC'
+                ),
                 [10]
-            );
-            expect(pool.query.mock.calls[0][0]).toContain(
-                'ORDER BY fecha DESC,id DESC'
             );
         });
 
@@ -78,7 +77,7 @@ describe('Movimientos - Service', () => {
     });
 
     describe('obtenerPorCategoria', () => {
-        test('debe devolver los movimientos de una categoría pertenecientes al usuario', async () => {
+        test('debe devolver los movimientos de una categoría pertenecientes al usuario y ordenados por fecha e ID descendente', async () => {
             const movimientos = [
                 { id: 1, usuario_id: 10, categoria_id: 3, tipo: 'gasto' }
             ];
@@ -89,7 +88,9 @@ describe('Movimientos - Service', () => {
 
             expect(resultado).toEqual(movimientos);
             expect(pool.query).toHaveBeenCalledWith(
-                expect.stringContaining('WHERE categoria_id=$1 AND usuario_id=$2'),
+                expect.stringContaining(
+                    'WHERE categoria_id=$1 AND usuario_id=$2 ORDER BY fecha DESC,id DESC'
+                ),
                 [3, 10]
             );
         });
@@ -206,6 +207,32 @@ describe('Movimientos - Service', () => {
             expect(pool.query).toHaveBeenCalledWith(
                 expect.stringContaining('SET descripcion=$1'),
                 ['Nueva descripción', 1, 10]
+            );
+        });
+
+        test('debe actualizar solamente la fecha', async () => {
+            const movimiento = {
+                id: 1,
+                usuario_id: 10,
+                fecha: '2026-11-01'
+            };
+
+            pool.query.mockResolvedValue({ rows: [movimiento] });
+
+            const resultado = await actualizar(
+                1,
+                10,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                '2026-11-01'
+            );
+
+            expect(resultado).toEqual(movimiento);
+            expect(pool.query).toHaveBeenCalledWith(
+                expect.stringContaining('SET fecha=$1'),
+                ['2026-11-01', 1, 10]
             );
         });
 

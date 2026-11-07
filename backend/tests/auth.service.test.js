@@ -1,4 +1,3 @@
-
 jest.mock('../config/conexion-db', () => ({
     query: jest.fn()
 }));
@@ -58,6 +57,11 @@ describe('Auth - Service', () => {
                 },
                 token: 'token-jwt'
             });
+
+            expect(pool.query).toHaveBeenCalledWith(
+                'SELECT id,nombre,email,password_hash FROM usuarios WHERE email=$1',
+                ['juan@example.com']
+            );
 
             expect(bcrypt.compare).toHaveBeenCalledWith(
                 'Clave123',
@@ -156,8 +160,9 @@ describe('Auth - Service', () => {
             const resultado = await obtenerPerfil(10);
 
             expect(resultado).toEqual(usuario);
+
             expect(pool.query).toHaveBeenCalledWith(
-                expect.stringContaining('WHERE id=$1'),
+                'SELECT id,nombre,email,creado_en FROM usuarios WHERE id=$1',
                 [10]
             );
         });
