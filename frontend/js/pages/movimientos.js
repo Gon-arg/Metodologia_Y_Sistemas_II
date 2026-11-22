@@ -4,7 +4,6 @@
 import { guardProtectedPage } from '../utils/protectedPage.js';
 guardProtectedPage();
 
-import { getUsuario } from '../store/authStore.js';
 import * as movimientosApi from '../api/movimientos.js';
 import * as categoriasApi from '../api/categorias.js';
 import { renderNavbar } from '../components/navbar.js';
@@ -13,7 +12,6 @@ import { renderSidebar } from '../components/sidebar.js';
 renderSidebar('sidebar');
 renderNavbar('navbar');
 
-const usuario = getUsuario();
 
 let movimientos = [];
 let categorias = [];
