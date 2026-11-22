@@ -119,3 +119,73 @@ INSERT INTO categorias (nombre) VALUES
 ('Viaje'),
 ('Ropa'),
 ('Sueldo');
+
+
+
+-- ==========================================
+-- DATOS FICTICIOS PARA PRUEBAS E2E
+-- ==========================================
+
+-- Usuario exclusivo para las pruebas automatizadas
+INSERT INTO usuarios (nombre, email, password_hash)
+VALUES (
+    'Pedro',
+    'pedro@gmail.com',
+    '$2b$10$euON08ONlPXT4fHKq9YXaunhuP8TkmMCZQ.mN.abmLFWb/EX6mLIG'
+)
+ON CONFLICT (email) DO UPDATE
+SET nombre = EXCLUDED.nombre,
+    password_hash = EXCLUDED.password_hash;
+
+-- Movimientos ficticios
+INSERT INTO movimientos (usuario_id, categoria_id, tipo, monto, descripcion, fecha)
+SELECT u.id, c.id, datos.tipo, datos.monto, datos.descripcion, CURRENT_DATE
+FROM usuarios u
+CROSS JOIN (
+    VALUES
+        ('gasto', 15000.00::DECIMAL, 'Compra de alimentos', 'Alimentos'),
+        ('gasto',  5000.00::DECIMAL, 'Transporte', 'Transporte'),
+        ('ingreso', 250000.00::DECIMAL, 'Sueldo', 'Sueldo')
+) AS datos(tipo, monto, descripcion, categoria)
+JOIN categorias c ON c.nombre = datos.categoria
+WHERE u.email = 'pedro@gmail.com'
+AND NOT EXISTS (
+    SELECT 1
+    FROM movimientos m
+    WHERE m.usuario_id = u.id
+      AND m.descripcion = datos.descripcion
+);
+
+-- Meta de ahorro ficticia
+INSERT INTO metas_ahorro (
+    usuario_id, nombre, monto_objetivo, fecha_limite
+)
+SELECT u.id, 'Vacaciones', 100000.00, CURRENT_DATE + INTERVAL '90 days'
+FROM usuarios u
+WHERE u.email = 'pedro@gmail.com'
+AND NOT EXISTS (
+    SELECT 1
+    FROM metas_ahorro m
+    WHERE m.usuario_id = u.id
+      AND m.nombre = 'Vacaciones'
+);
+
+-- Aportes a la meta (el trigger actualizará el monto acumulado)
+INSERT INTO aportes_metas (meta_id, monto, fecha, descripcion)
+SELECT m.id, datos.monto, CURRENT_DATE, datos.descripcion
+FROM metas_ahorro m
+CROSS JOIN (
+    VALUES
+        (15000.00::DECIMAL, 'Primer aporte'),
+        (10000.00::DECIMAL, 'Segundo aporte')
+) AS datos(monto, descripcion)
+WHERE m.nombre = 'Vacaciones'
+  AND m.usuario_id = (
+      SELECT id FROM usuarios WHERE email = 'pedro@gmail.com'
+  )
+  AND NOT EXISTS (
+      SELECT 1
+      FROM aportes_metas a
+      WHERE a.meta_id = m.id
+        AND a.descripcion = datos.descripcion
+  );
