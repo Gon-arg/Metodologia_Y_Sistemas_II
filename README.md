@@ -20,6 +20,7 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 - [Puesta en marcha](#puesta-en-marcha)
 - [Desarrollo local sin Docker](#desarrollo-local-sin-docker)
 - [Variables de entorno](#variables-de-entorno)
+- [Despliegue en la nube](#despliegue-en-la-nube)
 - [Documentación de la API](#documentación-de-la-api)
 - [Frontend](#frontend)
 - [Testing](#testing)
@@ -37,6 +38,7 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 - Control de acceso por usuario: la API toma al usuario del token y solo permite ver y modificar sus propios movimientos, metas y aportes. Los recursos de otro usuario no se pueden leer ni modificar: la API responde `404` (o una lista vacía en los listados).
 - Validación de los datos de entrada con un validador reutilizable (`utils/validator.js`) y reglas declarativas por recurso, además de manejo centralizado de errores.
 - Actualización automática del progreso de cada meta mediante triggers de PostgreSQL: al insertar, editar o eliminar un aporte se recalculan `monto_actual` y `estado` (`en proceso` o `completada`).
+- Despliegue en la nube con servicios gratuitos: base de datos en Neon, backend en Render, frontend en Netlify y envío de correos con Brevo.
 - Entorno reproducible con Docker Compose: API, base de datos, pgAdmin y servidor web del frontend se levantan con un solo comando.
 - Frontend sin build ni bundler, con dashboard, gestión de categorías, movimientos y metas, resumen mensual y perfil de usuario.
 - Pruebas automatizadas: unitarias y de integración en backend (Jest y Supertest) y frontend (Jest y jsdom), más pruebas end-to-end con Playwright.
@@ -57,6 +59,10 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 | Gráficos             | Chart.js 4 (CDN)                                   |
 | Servidor del front   | Nginx (Alpine)                                     |
 | Contenedores         | Docker y Docker Compose                            |
+<<<<<<< Updated upstream
+=======
+| Despliegue           | Neon (PostgreSQL), Render (API), Netlify (frontend) y Brevo (correos) |
+>>>>>>> Stashed changes
 | Pruebas backend      | Jest y Supertest                                   |
 | Pruebas frontend     | Jest (jsdom y Babel) y Playwright (end-to-end)     |
 | Calidad de código    | ESLint 10 y Husky (hook de pre-commit)             |
@@ -199,7 +205,7 @@ Si se usa otro puerto u origen para el backend, actualizar `API_BASE_URL` en `fr
 
 ## Variables de entorno
 
-Se configuran en el archivo `.env` de la raíz del proyecto (hay una plantilla en `.env.example`). El backend no tiene valores por defecto ni lee un archivo `.env` por su cuenta: recibe las variables desde Docker Compose. Las variables `SMTP_*` solo son necesarias para la recuperación de contraseña.
+Se configuran en el archivo `.env` de la raíz del proyecto (hay una plantilla en `.env.example`). El backend no tiene valores por defecto ni lee un archivo `.env` por su cuenta: recibe las variables desde Docker Compose. Las variables `SMTP_*` solo son necesarias para la recuperación de contraseña en local; en la nube se usan las variables `BREVO_*`. Las variables `DB_SSL` y `BREVO_*` son opcionales y solo se definen en el despliegue (ver [Despliegue en la nube](#despliegue-en-la-nube)).
 
 | Variable          | Descripción                                                              | Valor de ejemplo                  |
 | ----------------- | ------------------------------------------------------------------------ | --------------------------------- |
@@ -217,6 +223,107 @@ Se configuran en el archivo `.env` de la raíz del proyecto (hay una plantilla e
 | `PGADMIN_EMAIL`   | Email de acceso a pgAdmin                                                | `admin@admin.com`                 |
 | `PGADMIN_PASSWORD`| Contraseña de acceso a pgAdmin                                           | `admin`                           |
 | `FRONTEND_URL`    | URL base del frontend, usada en el enlace del correo de recuperación     | `http://localhost:8081`           |
+| `DB_SSL`          | Habilita SSL en la conexión a PostgreSQL (necesario en Neon). Opcional, solo en la nube | `true`          |
+| `BREVO_API_KEY`   | API key de Brevo. Si está definida, los correos se envían por su API y no por SMTP. Opcional, solo en la nube | `xkeysib-...` |
+| `BREVO_SENDER_EMAIL` | Remitente verificado en Brevo, usado junto con `BREVO_API_KEY`        | `tu_correo@gmail.com`             |
+
+## Despliegue en la nube
+
+Además de Docker, la aplicación puede publicarse con servicios gratuitos. Cada pieza va en un servicio distinto:
+
+| Pieza        | Servicio | Función                                    |
+| ------------ | -------- | ------------------------------------------ |
+| Código       | GitHub   | Repositorio y rama `deploy`                |
+| Base de datos| Neon     | PostgreSQL gestionado                      |
+| Correos      | Brevo    | Envío de mails de recuperación de contraseña |
+| Backend      | Render   | API Express en un contenedor Docker        |
+| Frontend     | Netlify  | Hosting de la carpeta `frontend/`          |
+
+Los pasos hay que seguirlos en este orden, porque unas piezas necesitan datos de otras.
+
+### Paso 1: GitHub (el código)
+
+1. Crear la rama de despliegue: `git checkout -b deploy`.
+2. Aplicar los tres cambios de código que habilitan el despliegue:
+   - `backend/config/conexion-db.js`: soporte SSL mediante la variable `DB_SSL`.
+   - `backend/utils/email.util.js`: envío con la API de Brevo, con respaldo a SMTP para el entorno local.
+   - `frontend/js/config.js`: detecta si se ejecuta en local o en la nube para elegir la URL de la API.
+3. Subir la rama: `git push -u origin deploy`.
+
+### Paso 2: Neon (la base de datos)
+
+1. Crear un proyecto en [neon.tech](https://neon.tech), en la región AWS US East (Virginia).
+2. En el **SQL Editor**, ejecutar todo el contenido de `backend/database/init.sql`.
+3. Verificar en **Tables** que estén las 6 tablas.
+4. En **Connect**, anotar el host, el usuario, la contraseña y el nombre de la base.
+
+### Paso 3: Brevo (los mails)
+
+1. Crear una cuenta en [Brevo](https://www.brevo.com).
+2. En **Senders**, agregar la cuenta de Gmail desde la que se enviarán los correos y confirmarla con el mail que llega.
+3. Crear una **API key** con permiso **Emails transaccionales → Todos** (el resto en Ninguno).
+4. Copiarla en el momento (empieza con `xkeysib-`), porque no se vuelve a mostrar.
+
+### Paso 4: Render (el backend)
+
+1. Elegir **New → Web Service** y conectar el repositorio.
+2. Configurar:
+
+| Campo          | Valor              |
+| -------------- | ------------------ |
+| Branch         | `deploy`           |
+| Root Directory | `backend`          |
+| Runtime        | Docker             |
+| Region         | Virginia (US East) |
+| Instance Type  | Free               |
+
+3. En **Environment**, cargar estas variables:
+
+| Variable                                       | De dónde sale                                     |
+| ---------------------------------------------- | ------------------------------------------------- |
+| `PORT`                                         | `3000`                                            |
+| `JWT_SECRET`                                   | Una cadena larga y aleatoria inventada para la ocasión |
+| `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Los datos de Neon (Paso 2)                        |
+| `DB_PORT`                                      | `5432`                                            |
+| `DB_SSL`                                       | `true`                                            |
+| `BREVO_API_KEY`                                | La API key de Brevo (Paso 3)                      |
+| `BREVO_SENDER_EMAIL`                           | El Gmail verificado en Brevo                      |
+| `FRONTEND_URL`                                 | Provisoria por ahora; se corrige en el Paso 6     |
+
+4. Hacer el deploy. Cuando el estado sea **Live**, copiar la URL del backend (`https://algo.onrender.com`).
+5. Probar `https://algo.onrender.com/api/categorias`: si responde "no autorizado" o "token requerido", el backend está funcionando.
+
+### Paso 5: Netlify (el frontend)
+
+1. En `frontend/js/config.js`, poner la URL de Render del Paso 4 en la segunda opción:
+
+   ```js
+   : 'https://algo.onrender.com/api'
+   ```
+
+2. Hacer commit y `push` a `deploy`.
+3. En Netlify, arrastrar la carpeta `frontend` (estando en la rama `deploy`).
+4. Copiar la URL del sitio (`https://nombre.netlify.app`).
+
+### Paso 6: Cerrar el círculo
+
+Volver a Render → **Environment** y cambiar `FRONTEND_URL` por la URL de Netlify, con `https://` y sin barra final. Render se vuelve a desplegar solo.
+
+### Paso 7: Probar todo junto
+
+1. Abrir la URL de Netlify con `Ctrl + Shift + R` para evitar la caché.
+2. Registrarse, iniciar sesión y crear una categoría y un movimiento.
+3. Probar la recuperación de contraseña con el Gmail verificado, escribiendo el email completo y sin espacios.
+
+### Por qué ese orden
+
+| Dependencia                                                | Consecuencia                          |
+| ---------------------------------------------------------- | ------------------------------------- |
+| Render necesita los datos de Neon y Brevo                  | Se crean antes                        |
+| Netlify necesita la URL de Render                          | Se hace después de Render             |
+| Render necesita la URL de Netlify (para el link del mail)  | Se completa al final                  |
+
+La última dependencia es circular: cada servicio necesita la URL del otro, por eso `FRONTEND_URL` se carga de forma provisoria y se corrige al terminar.
 
 ## Documentación de la API
 
@@ -300,7 +407,7 @@ Está ubicado en `frontend/`. Es un frontend vanilla (HTML y JavaScript con ES M
 
 ### Cómo está armado
 
-- `js/config.js` define `API_BASE_URL` (por defecto `http://localhost:3000/api`). Es el único lugar a modificar si el backend corre en otra URL.
+- `js/config.js` define `API_BASE_URL`: usa `http://localhost:3000/api` cuando el sitio se abre desde `localhost` o `127.0.0.1`, y la URL del backend publicado en cualquier otro dominio. Es el único lugar a modificar si el backend corre en otra URL (ver [Despliegue en la nube](#despliegue-en-la-nube)).
 - `js/tailwind-config.js` centraliza la paleta de colores y la tipografía que comparten todas las páginas.
 - `js/api/client.js` es un wrapper sobre `fetch` usado por todos los módulos de `js/api/`. Arma la URL completa, agrega el header `Authorization: Bearer <token>` cuando hay sesión, parsea el JSON y normaliza los mensajes de error del backend.
 - `js/store/authStore.js` guarda el token y los datos del usuario en `localStorage` (`finanzas_token` y `finanzas_usuario`) y expone `isAuthenticated()`.
@@ -431,7 +538,8 @@ El repositorio se organiza con ramas de corta duración que se integran a `main`
 Los mensajes de commit siguen el formato `tipo: descripción` (por ejemplo, `test: agregar pruebas de formato de moneda y fecha`).
 
 ## Notas y limitaciones conocidas
-- La URL de la API está fija en `frontend/js/config.js`. Si el backend no corre en `localhost:3000`, hay que editarla ahí.
+- La URL de la API está fija en `frontend/js/config.js`: `localhost:3000` en local y una URL de Render para el sitio publicado. Si el backend corre en otra dirección, hay que editarla ahí y volver a publicar el frontend.
+- En el plan gratuito de Render el servicio puede entrar en reposo tras un tiempo sin uso, por lo que la primera petición después de una pausa puede tardar en responder.
 - El backend habilita `cors()` sin restricciones, por lo que cualquier origen puede consumirlo. Conviene restringirlo en producción.
 - La base de datos no persiste datos entre recreaciones del contenedor (no hay volumen definido para PostgreSQL) y el puerto `5432` queda publicado en el host. Para un entorno real conviene agregar un volumen y no exponer el puerto.
 - Las credenciales de ejemplo de `.env.example` (`DB_PASSWORD`, `PGADMIN_PASSWORD`, `JWT_SECRET`) son solo para desarrollo y deben reemplazarse.
