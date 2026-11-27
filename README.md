@@ -18,9 +18,13 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 - [Modelo de datos](#modelo-de-datos)
 - [Requisitos previos](#requisitos-previos)
 - [Puesta en marcha](#puesta-en-marcha)
+- [Desarrollo local sin Docker](#desarrollo-local-sin-docker)
 - [Variables de entorno](#variables-de-entorno)
 - [Documentación de la API](#documentación-de-la-api)
 - [Frontend](#frontend)
+- [Testing](#testing)
+- [Calidad de código: linting y Husky](#calidad-de-código-linting-y-husky)
+- [Flujo de trabajo con Git](#flujo-de-trabajo-con-git)
 - [Notas y limitaciones conocidas](#notas-y-limitaciones-conocidas)
 - [Documentación del proyecto](#documentación-del-proyecto)
 
@@ -35,6 +39,8 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 - Actualización automática del progreso de cada meta mediante triggers de PostgreSQL: al insertar, editar o eliminar un aporte se recalculan `monto_actual` y `estado` (`en proceso` o `completada`).
 - Entorno reproducible con Docker Compose: API, base de datos, pgAdmin y servidor web del frontend se levantan con un solo comando.
 - Frontend sin build ni bundler, con dashboard, gestión de categorías, movimientos y metas, resumen mensual y perfil de usuario.
+- Pruebas automatizadas: unitarias y de integración en backend (Jest y Supertest) y frontend (Jest y jsdom), más pruebas end-to-end con Playwright.
+- Control de calidad con ESLint, ejecutado automáticamente antes de cada commit mediante un hook de Husky.
 
 ## Stack tecnológico
 
@@ -51,6 +57,9 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 | Gráficos             | Chart.js 4 (CDN)                                   |
 | Servidor del front   | Nginx (Alpine)                                     |
 | Contenedores         | Docker y Docker Compose                            |
+| Pruebas backend      | Jest y Supertest                                   |
+| Pruebas frontend     | Jest (jsdom y Babel) y Playwright (end-to-end)     |
+| Calidad de código    | ESLint 10 y Husky (hook de pre-commit)             |
 
 ## Estructura del proyecto
 
@@ -59,9 +68,15 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 ├── docker-compose.yaml        # Orquesta API, PostgreSQL, pgAdmin y Nginx
 ├── .env.example               # Plantilla de variables de entorno (se copia a .env)
 ├── .gitignore
+├── .husky/
+│   └── pre-commit             # Ejecuta `npm run lint` antes de cada commit
+├── package.json               # Scripts de lint y Husky (dependencia de desarrollo)
+├── ANALISIS_DECISIONES_DISENO.md # Análisis de patrones, SOLID y decisiones de diseño
 ├── backend/
 │   ├── app.js                 # Punto de entrada
 │   ├── Dockerfile
+│   ├── eslint.config.js       # Reglas de ESLint del backend
+│   ├── package.json           # Dependencias y scripts (start, test, lint)
 │   ├── core/
 │   │   └── server.js          # Configuración de Express y montaje de rutas
 │   ├── config/
@@ -73,10 +88,20 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 │   ├── controllers/           # Manejo de request y response
 │   ├── services/              # Lógica de negocio y acceso a datos
 │   ├── middlewares/           # Validadores, autenticación y manejo de errores
-│   └── utils/
-│       ├── email.util.js      # Función para enviar correos
-│       └── validator.js       # Validador genérico basado en reglas
+│   ├── utils/
+│   │   ├── email.util.js      # Función para enviar correos
+│   │   └── validator.js       # Validador genérico basado en reglas
+│   └── tests/
+│       ├── *.service.test.js  # Pruebas unitarias de los servicios
+│       └── integration/       # Pruebas de integración de la API (Supertest)
 └── frontend/
+    ├── package.json           # Scripts de test, cobertura, lint y e2e
+    ├── jest.config.cjs        # Jest con entorno jsdom y Babel
+    ├── babel.config.cjs
+    ├── eslint.config.cjs
+    ├── playwright.config.js   # Pruebas end-to-end (baseURL http://localhost:8081)
+    ├── tests/                 # Pruebas unitarias; integration/ para las de integración
+    ├── e2e/                   # Pruebas end-to-end con Playwright
     ├── index.html             # Redirige a login o dashboard según la sesión
     ├── login.html
     ├── registro.html
@@ -120,6 +145,8 @@ El script también carga nueve categorías iniciales: Alimentos, Transporte, Ser
 ## Requisitos previos
 
 - Docker Desktop, que ya incluye Docker Compose. En Linux sin Docker Desktop, instalar el plugin `docker-compose`.
+- Node.js 20 y npm, solo si se quieren ejecutar las pruebas, el linter o el backend fuera de Docker.
+- Git.
 
 ## Puesta en marcha
 
@@ -145,6 +172,30 @@ Esto levanta cuatro servicios:
 | `frontend` | `8081` | Nginx sirviendo la carpeta `frontend/`                      |
 
 Una vez levantado, la aplicación se abre en `http://localhost:8081`. Las credenciales de pgAdmin se definen con `PGADMIN_EMAIL` y `PGADMIN_PASSWORD` en el `.env`.
+
+Para detener los servicios se usa `docker compose down`. El script `init.sql` solo se ejecuta la primera vez que se crea la base de datos; como el servicio `db` no define un volumen de datos, la información se pierde al eliminar el contenedor (por ejemplo con `docker compose down`) y al volver a levantar el entorno la base se recrea con el esquema y las categorías iniciales.
+
+### Conectar pgAdmin a la base
+
+pgAdmin no publica puertos en el host, por lo que se accede desde el contenedor. Para registrar el servidor, usar como host `db`, puerto `5432` y las credenciales `DB_USER`, `DB_PASSWORD` y `DB_NAME` del `.env`.
+
+## Desarrollo local sin Docker
+
+El frontend es estático y el backend lee su configuración de variables de entorno, por lo que también pueden ejecutarse por separado:
+
+```bash
+# Backend (requiere una instancia de PostgreSQL con el esquema de backend/database/init.sql)
+cd backend
+npm install
+# Exportar las variables del .env (DB_HOST=localhost, JWT_SECRET, etc.) y luego:
+npm start
+
+# Frontend (cualquier servidor estático, por ejemplo)
+cd frontend
+npx serve .
+```
+
+Si se usa otro puerto u origen para el backend, actualizar `API_BASE_URL` en `frontend/js/config.js`. Como el backend no carga el archivo `.env` por su cuenta, las variables deben estar definidas en el entorno de la terminal antes de iniciarlo.
 
 ## Variables de entorno
 
@@ -306,9 +357,85 @@ Cada módulo de `frontend/js/api/` agrupa las llamadas a un recurso del backend 
 
 El frontend todavía no usa los endpoints `GET /aportes-metas` ni `PUT /aportes-metas/:id`, y tampoco tiene funciones para ellos.
 
+## Testing
+
+El proyecto incluye pruebas automatizadas en ambas capas. Las del backend y las unitarias y de integración del frontend no necesitan base de datos ni servidor levantado, porque simulan (mock) la conexión a PostgreSQL y las llamadas a la API.
+
+| Capa     | Tipo        | Herramientas        | Ubicación                         | Comando                                     |
+| -------- | ----------- | ------------------- | --------------------------------- | ------------------------------------------- |
+| Backend  | Unitarias   | Jest                | `backend/tests/*.service.test.js` | `npm test` (dentro de `backend/`)           |
+| Backend  | Integración | Jest y Supertest    | `backend/tests/integration/`      | `npm test` (dentro de `backend/`)           |
+| Frontend | Unitarias   | Jest y jsdom        | `frontend/tests/`                 | `npm test` (dentro de `frontend/`)          |
+| Frontend | Integración | Jest y jsdom        | `frontend/tests/integration/`     | `npm test` (dentro de `frontend/`)          |
+| Frontend | End-to-end  | Playwright          | `frontend/e2e/`                   | `npm run test:e2e` (dentro de `frontend/`)  |
+
+### Backend
+
+```bash
+cd backend
+npm install
+npm test
+```
+
+Cubre los servicios de autenticación, usuarios, movimientos, metas de ahorro y aportes, y la API completa de movimientos y aportes a metas a través de Supertest, con la conexión a la base reemplazada por un mock.
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm test                # Pruebas unitarias y de integración
+npm run test:watch      # Modo observador
+npm run test:coverage   # Con informe de cobertura (carpeta coverage/)
+```
+
+Cubre el cliente HTTP, el almacén de sesión, la protección de páginas, las utilidades de formato (moneda y fecha), los módulos de API de cada recurso y los flujos de inicio de sesión, categorías, movimientos y metas.
+
+### Pruebas end-to-end
+
+Las pruebas de `frontend/e2e/` usan Playwright con Chromium y sí requieren el entorno completo levantado (`docker compose up`), con el frontend en `http://localhost:8081`. Además, esperan que exista el usuario `pedro@gmail.com` con contraseña `12345678`, que debe registrarse antes desde `registro.html`.
+
+```bash
+cd frontend
+npm install
+npx playwright install chromium   # Solo la primera vez
+npm run test:e2e
+```
+
+Escenarios cubiertos: inicio de sesión con acceso al dashboard y registro de un gasto que luego aparece en el listado de movimientos.
+
+## Calidad de código: linting y Husky
+
+El código se revisa con ESLint (`eslint:recommended`), con una configuración propia para el backend (CommonJS) y otra para el frontend (ES Modules en el navegador).
+
+```bash
+npm run lint            # Desde la raíz: backend y frontend
+npm run lint:backend
+npm run lint:frontend
+```
+
+Husky ejecuta `npm run lint` automáticamente antes de cada `git commit` (hook `.husky/pre-commit`), y el commit se cancela si el linter encuentra errores. Para que el hook quede instalado, ejecutar `npm install` en la raíz del proyecto una vez después de clonar el repositorio (el script `prepare` lo activa). Las dependencias de `backend/` y `frontend/` se instalan por separado con `npm install` en cada carpeta.
+
+## Flujo de trabajo con Git
+
+El repositorio se organiza con ramas de corta duración que se integran a `main` mediante Pull Requests, con prefijos según el tipo de cambio:
+
+| Prefijo     | Uso                                                     |
+| ----------- | ------------------------------------------------------- |
+| `feature/`  | Nuevas funcionalidades                                  |
+| `fix/`      | Corrección de errores                                   |
+| `chore/`    | Configuración, tooling y tareas de mantenimiento        |
+| `test/`     | Incorporación o ampliación de pruebas                   |
+| `docs/`     | Cambios en la documentación                             |
+
+Los mensajes de commit siguen el formato `tipo: descripción` (por ejemplo, `test: agregar pruebas de formato de moneda y fecha`).
+
 ## Notas y limitaciones conocidas
 - La URL de la API está fija en `frontend/js/config.js`. Si el backend no corre en `localhost:3000`, hay que editarla ahí.
 - El backend habilita `cors()` sin restricciones, por lo que cualquier origen puede consumirlo. Conviene restringirlo en producción.
+- La base de datos no persiste datos entre recreaciones del contenedor (no hay volumen definido para PostgreSQL) y el puerto `5432` queda publicado en el host. Para un entorno real conviene agregar un volumen y no exponer el puerto.
+- Las credenciales de ejemplo de `.env.example` (`DB_PASSWORD`, `PGADMIN_PASSWORD`, `JWT_SECRET`) son solo para desarrollo y deben reemplazarse.
+- Las pruebas end-to-end dependen de datos previos (el usuario `pedro@gmail.com`) y del entorno levantado, por lo que no se ejecutan de forma autónoma.
 - Se crearon las ramas feature/ia-backend y feature/optimizacion-ia-backend como base para futuras modificaciones de la aplicación. Estas funcionalidades no se integraron en la versión actual del proyecto. Quedan como trabajo pendiente para una posible implementación de un modelo de inteligencia artificial que actúe como asistente de la aplicación, junto con las optimizaciones relacionadas con su funcionamiento.
 
 ## Documentación del proyecto
