@@ -4,6 +4,8 @@ Aplicación de finanzas personales compuesta por una API REST (Node.js, Express 
 
 Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 
+**Aplicación publicada:** [https://finanzas-personalesss.netlify.app/login.html](https://finanzas-personalesss.netlify.app/login.html)
+
 ## Integrantes
 
 - Ricardo Herbas
@@ -59,10 +61,7 @@ Proyecto desarrollado en el marco de la materia Metodología de Sistemas 2.
 | Gráficos             | Chart.js 4 (CDN)                                   |
 | Servidor del front   | Nginx (Alpine)                                     |
 | Contenedores         | Docker y Docker Compose                            |
-<<<<<<< Updated upstream
-=======
 | Despliegue           | Neon (PostgreSQL), Render (API), Netlify (frontend) y Brevo (correos) |
->>>>>>> Stashed changes
 | Pruebas backend      | Jest y Supertest                                   |
 | Pruebas frontend     | Jest (jsdom y Babel) y Playwright (end-to-end)     |
 | Calidad de código    | ESLint 10 y Husky (hook de pre-commit)             |
@@ -229,101 +228,56 @@ Se configuran en el archivo `.env` de la raíz del proyecto (hay una plantilla e
 
 ## Despliegue en la nube
 
-Además de Docker, la aplicación puede publicarse con servicios gratuitos. Cada pieza va en un servicio distinto:
+La aplicación está publicada y se puede usar en [https://finanzas-personalesss.netlify.app/login.html](https://finanzas-personalesss.netlify.app/login.html). El despliegue se hizo con servicios gratuitos, cada uno a cargo de una pieza del sistema.
 
-| Pieza        | Servicio | Función                                    |
-| ------------ | -------- | ------------------------------------------ |
-| Código       | GitHub   | Repositorio y rama `deploy`                |
-| Base de datos| Neon     | PostgreSQL gestionado                      |
-| Correos      | Brevo    | Envío de mails de recuperación de contraseña |
-| Backend      | Render   | API Express en un contenedor Docker        |
-| Frontend     | Netlify  | Hosting de la carpeta `frontend/`          |
+### Arquitectura
 
-Los pasos hay que seguirlos en este orden, porque unas piezas necesitan datos de otras.
+```
+                    ┌────────────────────┐
+   Navegador ─────► │  Netlify           │   Sirve la carpeta frontend/ (sitio estático)
+                    └─────────┬──────────┘
+                              │ fetch (HTTPS, JWT)
+                              ▼
+                    ┌────────────────────┐
+                    │  Render            │   API Express en un contenedor Docker
+                    │  (rama deploy)     │
+                    └───────┬────────┬───┘
+              SSL (DB_SSL)  │        │  API HTTP (BREVO_API_KEY)
+                            ▼        ▼
+                    ┌──────────┐  ┌──────────┐
+                    │  Neon    │  │  Brevo   │   Correos de recuperación de contraseña
+                    │ Postgres │  └──────────┘
+                    └──────────┘
+```
 
-### Paso 1: GitHub (el código)
+### Cómo se conectan las piezas
 
-1. Crear la rama de despliegue: `git checkout -b deploy`.
-2. Aplicar los tres cambios de código que habilitan el despliegue:
-   - `backend/config/conexion-db.js`: soporte SSL mediante la variable `DB_SSL`.
-   - `backend/utils/email.util.js`: envío con la API de Brevo, con respaldo a SMTP para el entorno local.
-   - `frontend/js/config.js`: detecta si se ejecuta en local o en la nube para elegir la URL de la API.
-3. Subir la rama: `git push -u origin deploy`.
+| Conexión | Cómo funciona |
+| -------- | ------------- |
+| GitHub → Render | Render toma el código de la rama `deploy`, con `backend/` como directorio raíz, y lo construye con el `Dockerfile` del backend. |
+| Netlify → Render | El frontend llama a la API de Render. La URL se define en `frontend/js/config.js`: usa `localhost:3000` cuando el sitio se abre desde `localhost` y la URL de Render en cualquier otro dominio. |
+| Render → Neon | El backend se conecta a PostgreSQL con las variables `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` y `DB_PORT` de Neon. Con `DB_SSL=true` la conexión se hace con SSL, que Neon exige. |
+| Render → Brevo | Si `BREVO_API_KEY` está definida, `email.util.js` envía los correos por la API de Brevo, usando como remitente el Gmail verificado en `BREVO_SENDER_EMAIL`. Sin esa variable, usa SMTP como en local. |
+| Render → Netlify | `FRONTEND_URL` guarda la URL de Netlify, y el backend la usa para armar el enlace del correo de recuperación de contraseña. |
 
-### Paso 2: Neon (la base de datos)
+### Variables de entorno en Render
 
-1. Crear un proyecto en [neon.tech](https://neon.tech), en la región AWS US East (Virginia).
-2. En el **SQL Editor**, ejecutar todo el contenido de `backend/database/init.sql`.
-3. Verificar en **Tables** que estén las 6 tablas.
-4. En **Connect**, anotar el host, el usuario, la contraseña y el nombre de la base.
+| Variable | Valor |
+| -------- | ----- |
+| `PORT` | `3000` |
+| `JWT_SECRET` | Cadena larga y aleatoria para firmar los tokens |
+| `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Datos de conexión del proyecto de Neon |
+| `DB_PORT` | `5432` |
+| `DB_SSL` | `true` |
+| `BREVO_API_KEY` | API key de Brevo con permiso de emails transaccionales |
+| `BREVO_SENDER_EMAIL` | Gmail verificado como remitente en Brevo |
+| `FRONTEND_URL` | URL de Netlify, con `https://` y sin barra final |
 
-### Paso 3: Brevo (los mails)
+El esquema de la base de Neon se creó ejecutando `backend/database/init.sql` en su SQL Editor, lo que genera las 6 tablas.
 
-1. Crear una cuenta en [Brevo](https://www.brevo.com).
-2. En **Senders**, agregar la cuenta de Gmail desde la que se enviarán los correos y confirmarla con el mail que llega.
-3. Crear una **API key** con permiso **Emails transaccionales → Todos** (el resto en Ninguno).
-4. Copiarla en el momento (empieza con `xkeysib-`), porque no se vuelve a mostrar.
+### Dependencia circular entre Render y Netlify
 
-### Paso 4: Render (el backend)
-
-1. Elegir **New → Web Service** y conectar el repositorio.
-2. Configurar:
-
-| Campo          | Valor              |
-| -------------- | ------------------ |
-| Branch         | `deploy`           |
-| Root Directory | `backend`          |
-| Runtime        | Docker             |
-| Region         | Virginia (US East) |
-| Instance Type  | Free               |
-
-3. En **Environment**, cargar estas variables:
-
-| Variable                                       | De dónde sale                                     |
-| ---------------------------------------------- | ------------------------------------------------- |
-| `PORT`                                         | `3000`                                            |
-| `JWT_SECRET`                                   | Una cadena larga y aleatoria inventada para la ocasión |
-| `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Los datos de Neon (Paso 2)                        |
-| `DB_PORT`                                      | `5432`                                            |
-| `DB_SSL`                                       | `true`                                            |
-| `BREVO_API_KEY`                                | La API key de Brevo (Paso 3)                      |
-| `BREVO_SENDER_EMAIL`                           | El Gmail verificado en Brevo                      |
-| `FRONTEND_URL`                                 | Provisoria por ahora; se corrige en el Paso 6     |
-
-4. Hacer el deploy. Cuando el estado sea **Live**, copiar la URL del backend (`https://algo.onrender.com`).
-5. Probar `https://algo.onrender.com/api/categorias`: si responde "no autorizado" o "token requerido", el backend está funcionando.
-
-### Paso 5: Netlify (el frontend)
-
-1. En `frontend/js/config.js`, poner la URL de Render del Paso 4 en la segunda opción:
-
-   ```js
-   : 'https://algo.onrender.com/api'
-   ```
-
-2. Hacer commit y `push` a `deploy`.
-3. En Netlify, arrastrar la carpeta `frontend` (estando en la rama `deploy`).
-4. Copiar la URL del sitio (`https://nombre.netlify.app`).
-
-### Paso 6: Cerrar el círculo
-
-Volver a Render → **Environment** y cambiar `FRONTEND_URL` por la URL de Netlify, con `https://` y sin barra final. Render se vuelve a desplegar solo.
-
-### Paso 7: Probar todo junto
-
-1. Abrir la URL de Netlify con `Ctrl + Shift + R` para evitar la caché.
-2. Registrarse, iniciar sesión y crear una categoría y un movimiento.
-3. Probar la recuperación de contraseña con el Gmail verificado, escribiendo el email completo y sin espacios.
-
-### Por qué ese orden
-
-| Dependencia                                                | Consecuencia                          |
-| ---------------------------------------------------------- | ------------------------------------- |
-| Render necesita los datos de Neon y Brevo                  | Se crean antes                        |
-| Netlify necesita la URL de Render                          | Se hace después de Render             |
-| Render necesita la URL de Netlify (para el link del mail)  | Se completa al final                  |
-
-La última dependencia es circular: cada servicio necesita la URL del otro, por eso `FRONTEND_URL` se carga de forma provisoria y se corrige al terminar.
+Netlify necesita la URL de Render para saber a dónde enviar las peticiones, y Render necesita la URL de Netlify para armar el enlace de recuperación de contraseña. Por eso `FRONTEND_URL` se cargó primero con un valor provisorio y se corrigió una vez publicado el frontend.
 
 ## Documentación de la API
 
